@@ -1,0 +1,32 @@
+# 环境变量（含 API Key）
+# 三条一起写是为了覆盖所有变体：有人会建 .env.local / .env.production，
+# 只写 .env 的话那种文件会被提交上去。而 .env.example 是模板，**必须**进仓库。
+.env
+.env.*
+!.env.example
+
+# 本地数据库
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# 编辑器
+.vscode/
+.idea/
+
+# session artifacts / build products
+.workbuddy/
+*.egg-info/

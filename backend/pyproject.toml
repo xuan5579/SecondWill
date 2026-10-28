@@ -1,0 +1,30 @@
+[project]
+name = "daily-planner-backend"
+version = "0.1.0"
+description = "AI 执行教练 / 拖延干预系统 · 后端"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "sqlalchemy>=2.0",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
+
+[tool.setuptools]
+# 显式声明包是必须的：backend/ 下平铺着 app/、tests/、fixtures/ 三个目录，
+# setuptools 的 flat-layout 自动发现会因"发现多个顶层包"直接报错，
+# 于是 README 的第一步 `pip install -e ".[dev]"` 根本跑不起来。
+# 注意 packages 属于 [tool.setuptools]，写在 [project] 里会被忽略。
+packages = ["app"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

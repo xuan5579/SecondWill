@@ -1,0 +1,920 @@
+:root {
+  /* 沿用桌面版的深色基调作为 v1.0 默认主题 */
+  --bg: #14151a;
+  --surface: #1c1e25;
+  --surface-2: #23262f;
+  --border: #31353f;
+  --text: #d7dae0;
+  --text-dim: #8b90a0;
+  --accent: #7f77dd;
+  --accent-dim: rgba(127, 119, 221, 0.16);
+  --done: #5dcaa5;
+  --pending: #85b7eb;
+  --danger: #f09595;
+  --warn: #ef9f27;
+
+  color-scheme: dark;
+  font-family: system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* 浅色主题：同一套变量名，只换取值。组件里不得出现任何硬编码颜色。 */
+:root[data-theme='light'] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef0f4;
+  --border: #d9dde5;
+  --text: #22242a;
+  --text-dim: #6b7180;
+  --accent: #6a61d8;
+  --accent-dim: rgba(106, 97, 216, 0.12);
+  --done: #27916b;
+  --pending: #3d7dc4;
+  --danger: #c9484c;
+  --warn: #b47100;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: none;
+}
+
+/* 实时通道状态徽标：让"当前有没有实时推送"肉眼可见，
+   否则 SSE 悄悄降级成轮询时，用户只会觉得"好像不太跟手"。 */
+.conn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  cursor: default;
+  white-space: nowrap;
+}
+
+.conn-live {
+  color: var(--done);
+  border-color: var(--done);
+}
+
+.conn-polling {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.banner-error {
+  background: rgba(240, 149, 149, 0.12);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.banner-hint {
+  margin-top: 6px;
+  opacity: 0.85;
+}
+
+.banner-hint code {
+  background: var(--surface-2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.field-error.wide {
+  flex-basis: 100%;
+}
+
+/* ---- 宠物面板（P3-a ASCII 占位，P3-c 换 SVG 时不改这里的布局） ---- */
+.pet-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.pet-face {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.pet-face[data-mood='alert'] {
+  border-color: var(--warn);
+}
+.pet-face[data-mood='tired'],
+.pet-face[data-mood='dormant'] {
+  border-color: var(--text-dim);
+  opacity: 0.8;
+}
+.pet-face[data-mood='guilty'] {
+  border-color: var(--danger);
+}
+.pet-face[data-mood='great'] {
+  border-color: var(--done);
+  background: rgba(93, 202, 165, 0.14);
+}
+
+/* ---- 六档猫的表情动画 ----
+   每档一个能"一眼读懂"的动作，而不是单纯换张脸：
+   alert 在抖（出事了要提醒你）、great 在跳（节奏在线）、
+   dormant 慢呼吸（好几天没动静）、tired 缓慢下沉（撑不住了）。 */
+
+.cat {
+  transition: transform 0.35s ease;
+}
+
+.cat-alert {
+  animation: cat-shake 0.9s ease-in-out infinite;
+}
+
+.cat-great {
+  animation: cat-bounce 1.8s ease-in-out infinite;
+}
+
+.cat-dormant {
+  animation: cat-breathe-slow 4.5s ease-in-out infinite;
+}
+
+.cat-tired {
+  animation: cat-sag 3.6s ease-in-out infinite;
+}
+
+.cat-guilty {
+  animation: cat-sway 3s ease-in-out infinite;
+}
+
+.cat-normal {
+  animation: cat-breathe-slow 5s ease-in-out infinite;
+}
+
+@keyframes cat-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-2px) rotate(-3deg); }
+  40% { transform: translateX(2px) rotate(3deg); }
+  60% { transform: translateX(-1.5px) rotate(-2deg); }
+  80% { transform: translateX(1.5px) rotate(2deg); }
+}
+
+@keyframes cat-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+  60% { transform: translateY(-1px); }
+}
+
+@keyframes cat-breathe-slow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.045); opacity: 0.88; }
+}
+
+@keyframes cat-sag {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+@keyframes cat-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-4deg); }
+}
+
+.cat-zzz {
+  animation: cat-zzz-float 3.2s ease-in-out infinite;
+}
+
+@keyframes cat-zzz-float {
+  0% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
+  50% { opacity: 0.9; transform: translate(3px, -5px) scale(1.1); }
+  100% { opacity: 0.2; transform: translate(6px, -10px) scale(0.8); }
+}
+
+/* 用户开启了"减少动态效果"时不要抖个不停 ——  respect 系统设置 */
+@media (prefers-reduced-motion: reduce) {
+  .cat,
+  .cat-zzz {
+    animation: none !important;
+  }
+}
+
+.pet-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.pet-mood {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pet-energy {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  margin: 6px 0;
+  overflow: hidden;
+}
+
+.pet-energy-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.pet-line {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.pet-reason {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.pet-ascii {
+  font-size: 12px;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+.pet-stats {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+  flex: none;
+}
+
+.pet-stats > div {
+  text-align: right;
+}
+
+.pet-stats dt {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.pet-stats dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-bad {
+  color: var(--warn);
+}
+
+.stat-ok {
+  color: var(--done);
+}
+
+/* ---- 冲突 ---- */
+.banner-warn {
+  background: rgba(239, 159, 39, 0.12);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.conflict-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.conflict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.conflict.is-hard {
+  border-left-color: var(--warn);
+}
+
+.conflict.is-soft {
+  border-left-color: var(--text-dim);
+}
+
+.conflict-detail {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.conflict-ids {
+  color: var(--text);
+  opacity: 0.85;
+}
+
+/* ---- 表单 / 控件 ---- */
+.record-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+input,
+select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.record-form input:not([type='datetime-local']) {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn.primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn.small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.btn.danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---- 列表 ---- */
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.record.status-done {
+  opacity: 0.6;
+}
+
+.record.has-conflict {
+  border-color: var(--warn);
+}
+
+.record.is-editing {
+  flex-direction: column;
+  align-items: stretch;
+  border-color: var(--accent);
+}
+
+.edit-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.edit-grid input:not([type='datetime-local']),
+.edit-grid input[type='text'] {
+  flex: 1;
+  min-width: 180px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.record-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.record-title {
+  font-size: 15px;
+}
+
+.record-time {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.record-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.badge-pending {
+  color: var(--pending);
+  border-color: var(--pending);
+}
+.badge-done {
+  color: var(--done);
+  border-color: var(--done);
+}
+.badge-dropped {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.badge-in_progress {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.badge-hard {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.badge-soft {
+  color: var(--text-dim);
+}
+
+.empty {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* ==================================================================
+   自然语言录入（P3-d）：草稿卡片
+   ================================================================== */
+
+.quick-add {
+  margin: 16px 0;
+}
+
+.qa-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.qa-input {
+  flex: 1;
+}
+
+.qa-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.qa-chips-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-right: 2px;
+}
+
+.chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* 推断项必须一眼看出来是"系统猜的" —— 这是不替用户做决定的可视化保证 */
+.chip.assume {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: rgba(239, 159, 39, 0.1);
+}
+
+.qa-card {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.qa-card-error {
+  border-color: var(--danger);
+  background: rgba(224, 108, 108, 0.08);
+}
+
+.qa-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.qa-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.qa-badge.ok {
+  color: var(--done);
+  border-color: var(--done);
+}
+
+.qa-badge.warn {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.qa-badge.err {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.qa-source {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.qa-msg {
+  font-size: 13px;
+  margin: 0 0 6px;
+}
+
+.qa-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.qa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.qa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.qa-field em {
+  font-style: normal;
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--warn);
+}
+
+/* 未识别的字段留空并高亮边框 —— 视觉上明确告诉用户"这里要你填" */
+.qa-field.missing input {
+  border-color: var(--warn);
+  background: rgba(239, 159, 39, 0.07);
+}
+
+.qa-assumptions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.qa-assumptions-label {
+  font-size: 11px;
+  color: var(--warn);
+  margin-right: 2px;
+}
+
+.qa-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.qa-note {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ---- 干预卡片（P4）----
+   卡片上最显眼的是"这条建议是谁给的"。降级方案不该伪装成模型输出，
+   所以在视觉上就把三种来源区隔开，而不是只在调试面板里写一行字。 */
+.intervention {
+  margin: 16px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.intervention[data-source='fallback'] {
+  border-left-color: var(--warn);
+}
+
+.intervention[data-source='cache'] {
+  border-left-color: var(--text-dim);
+}
+
+.intervention-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.intervention-head h2 {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.src {
+  flex: none;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+  cursor: help;
+}
+
+.src-fallback {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: rgba(239, 159, 39, 0.1);
+}
+
+.src-cache {
+  border-color: var(--text-dim);
+  color: var(--text-dim);
+  background: var(--surface-2);
+}
+
+.intervention-msg {
+  margin: 10px 0 0;
+  color: var(--text);
+}
+
+.intervention-line {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.cat-tag {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.suggestion-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggestion-list li {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.suggestion-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.suggestion-main .kind {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.suggestion-main .when {
+  font-size: 12px;
+  color: var(--pending);
+}
+
+.rationale {
+  margin: 6px 0 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.intervention-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.caveat {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--warn);
+}
+
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+
+/* ---- 干预反馈（P5）----
+   反馈控件是"系统愿意被纠正"的物证。它的样式要说明两件事：
+   一是点了有用（active 态），二是"不再提醒"有实际后果（hover 提示）。 */
+.intervention-feedback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.fb-label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.btn.ghost.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.fb-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.fb-hint.muted {
+  color: var(--warn);
+}
+
+/* 闸门拦下干预时的说明。它不是错误 —— 用中性色，别吓到人。 */
+.banner-info {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
