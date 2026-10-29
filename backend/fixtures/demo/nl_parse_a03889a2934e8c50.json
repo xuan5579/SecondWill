@@ -1,0 +1,33 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "period_inherited",
+      "label": "结束时间按『下午』理解",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 1.0,
+  "text": "今天下午3点到4点半评审PR",
+  "draft": {
+    "title": "评审PR",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 0,
+      "minute": 900
+    },
+    "end": {
+      "type": "relative",
+      "day_offset": 0,
+      "minute": 990
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "period_inherited",
+      "label": "结束时间按『下午』理解",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 1.0,
+  "text": "11月3日下午2点到4点客户拜访",
+  "draft": {
+    "title": "客户拜访",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "absolute",
+      "month": 11,
+      "day": 3,
+      "minute": 840
+    },
+    "end": {
+      "type": "absolute",
+      "month": 11,
+      "day": 3,
+      "minute": 960
+    }
+  }
+}

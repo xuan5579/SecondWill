@@ -1,0 +1,18 @@
+{
+  "status": "need_user",
+  "source": "llm",
+  "draft": {
+    "title": "做复盘",
+    "start_at": null,
+    "end_at": null,
+    "priority": 3
+  },
+  "missing": [
+    "start_at",
+    "end_at"
+  ],
+  "assumptions": [],
+  "error": null,
+  "confidence": 0.6,
+  "text": "下周抽空做复盘"
+}

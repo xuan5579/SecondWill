@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "decision_type": "reschedule",
+  "confidence": 0.62,
+  "summary": "「写周报」与「部门例会」重叠 30 分钟，把周报挪到 10-30 上午 9 点执行",
+  "reasoning_tags": [
+    "conflict"
+  ],
+  "suggestions": [
+    {
+      "id": "s1",
+      "kind": "move",
+      "target_record_id": "rec_demo_b",
+      "proposed_start": "2026-10-30T01:00:00+00:00",
+      "proposed_end": "2026-10-30T02:00:00+00:00",
+      "rationale": "「写周报」原定 01:22 开始，与 00:52~01:52 的「部门例会」重叠 30 分钟；移到 10-30 上午 9 点，与例会完全避开，也不占用其他时段",
+      "risk": "low"
+    }
+  ],
+  "intervention": {
+    "type": "reschedule_proposal",
+    "title": "有个时间撞了",
+    "message": "「写周报」和「部门例会」重叠了 30 分钟，把周报挪到 10-30 上午 9:00 执行就行。",
+    "pet_line": "我看了下日历，这个重叠现在挪开最省事。",
+    "tone": "gentle",
+    "expires_at": "2026-10-29T16:52:00+00:00",
+    "actions": [
+      {
+        "label": "就按这个改",
+        "kind": "accept"
+      },
+      {
+        "label": "这次先不了",
+        "kind": "snooze"
+      }
+    ]
+  },
+  "caveats": [
+    "若你本来就打算深夜处理这两件事，可以忽略这条建议"
+  ]
+}

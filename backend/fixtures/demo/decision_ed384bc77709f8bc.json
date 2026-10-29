@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "decision_type": "reschedule",
+  "confidence": 0.62,
+  "summary": "今晚 23:52 起到明天 05:22 是五条连轴任务，先把前三条挪到明天上午 09:00 之后",
+  "reasoning_tags": [
+    "overload"
+  ],
+  "suggestions": [
+    {
+      "id": "s1",
+      "kind": "move",
+      "target_record_id": "rec_demo_d0",
+      "proposed_start": "2026-10-30T01:00:00+00:00",
+      "proposed_end": "2026-10-30T02:30:00+00:00",
+      "rationale": "原来排在 23:52 开始，挪到明天上午第一段，白天精力更稳",
+      "risk": "low"
+    },
+    {
+      "id": "s2",
+      "kind": "move",
+      "target_record_id": "rec_demo_d1",
+      "proposed_start": "2026-10-30T02:30:00+00:00",
+      "proposed_end": "2026-10-30T04:00:00+00:00",
+      "rationale": "接在第一条后面，保持原来的先后顺序",
+      "risk": "low"
+    },
+    {
+      "id": "s3",
+      "kind": "move",
+      "target_record_id": "rec_demo_d2",
+      "proposed_start": "2026-10-30T06:00:00+00:00",
+      "proposed_end": "2026-10-30T07:30:00+00:00",
+      "rationale": "中午留出吃饭和休息，下午这一段单独放",
+      "risk": "medium"
+    }
+  ],
+  "intervention": {
+    "type": "reschedule_proposal",
+    "title": "今晚这段排得有点长",
+    "message": "从 23:52 到 05:22 连着排了五条任务。先把前三条挪到明天 09:00 之后的白天时段，剩下两条可以跟着一起调整。",
+    "pet_line": "我看了下日历，今晚到凌晨这段挺满的，往前挪一点会松快些。",
+    "tone": "gentle",
+    "expires_at": "2026-10-30T00:30:00+00:00",
+    "actions": [
+      {
+        "label": "就按这个改",
+        "kind": "accept"
+      },
+      {
+        "label": "这次先不了",
+        "kind": "snooze"
+      }
+    ]
+  },
+  "caveats": [
+    "一次最多给三条建议，rec_demo_d3、rec_demo_d4 仍留在 02:52~05:22，需要的话可以下一轮再一起挪"
+  ]
+}

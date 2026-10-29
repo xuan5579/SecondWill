@@ -1,0 +1,23 @@
+{
+  "status": "need_user",
+  "source": "llm",
+  "draft": {
+    "title": "交季度报告",
+    "start_at": null,
+    "end_at": "2026-10-31T15:59:59+00:00",
+    "priority": 3
+  },
+  "missing": [
+    "start_at"
+  ],
+  "assumptions": [
+    {
+      "code": "month_end_deadline",
+      "label": "你只说了“月底前”，没有给出具体日期和时刻；我按现在时间（2026-10-29）把“月底”理解为 2026-10-31，并把缺少的时刻当作当天结束 23:59:",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.6,
+  "text": "月底前交季度报告"
+}

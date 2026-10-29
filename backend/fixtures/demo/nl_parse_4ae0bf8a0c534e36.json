@@ -1,0 +1,25 @@
+{
+  "status": "need_user",
+  "source": "rule",
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [],
+  "error": null,
+  "confidence": 0.85,
+  "text": "明天早上7点跑步",
+  "draft": {
+    "title": "跑步",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 1,
+      "minute": 420
+    },
+    "end": null
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "status": "resolved",
+  "source": "llm",
+  "draft": {
+    "title": "会议（明天 9 点、10 点、11 点各一场）",
+    "start_at": "2026-10-30T01:00:00+00:00",
+    "end_at": "2026-10-30T04:00:00+00:00",
+    "priority": 3
+  },
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "date_default_tomorrow",
+      "label": "「明天」按现在时间（2026-10-29）推算为 2026-10-30",
+      "field": "start_at"
+    },
+    {
+      "code": "duration_default_1h",
+      "label": "每场会议未给时长，按默认 1 小时计：9:00-10:00、10:00-11:00、11:00-12:00",
+      "field": "end_at"
+    },
+    {
+      "code": "merge_multi_events",
+      "label": "一句话含三场会议，暂合并为一个 9:00-12:00 的连续时段草稿，请确认是否拆成三条",
+      "field": "start_at"
+    },
+    {
+      "code": "priority_default",
+      "label": "未提到优先级，默认 3",
+      "field": "priority"
+    }
+  ],
+  "error": null,
+  "confidence": 0.6,
+  "text": "明天9点10点11点各一个会"
+}

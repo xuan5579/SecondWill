@@ -1,0 +1,31 @@
+{
+  "status": "need_user",
+  "source": "rule",
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [
+    {
+      "code": "dom_semantics",
+      "label": "『30号』按最近的未来日期解析",
+      "field": "start_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.75,
+  "text": "30号晚上7点健身",
+  "draft": {
+    "title": "健身",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 1,
+      "minute": 1140
+    },
+    "end": null
+  }
+}

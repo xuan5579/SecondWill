@@ -1,0 +1,28 @@
+{
+  "status": "need_user",
+  "source": "llm",
+  "draft": {
+    "title": "开会",
+    "start_at": "2026-10-30T02:00:00+00:00",
+    "end_at": null,
+    "priority": 3
+  },
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [
+    {
+      "code": "date_default_tomorrow",
+      "label": "未提到具体日期，按“明天”推算为 2026-10-30",
+      "field": "start_at"
+    },
+    {
+      "code": "split_multiple_events",
+      "label": "这句话里有两件事（上午10点开会、下午3点写文档），本次只录入第一件“开会”，第二件需要再单独录入",
+      "field": "title"
+    }
+  ],
+  "error": null,
+  "confidence": 0.6,
+  "text": "明天上午10点开会然后下午3点写文档"
+}

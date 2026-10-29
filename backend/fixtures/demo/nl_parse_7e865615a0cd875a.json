@@ -1,0 +1,31 @@
+{
+  "status": "need_user",
+  "source": "rule",
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [
+    {
+      "code": "week_semantics",
+      "label": "下周＝下一个日历周（周一起算），可能与口语理解相差一天",
+      "field": "start_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.75,
+  "text": "下周三上午10点团队周会",
+  "draft": {
+    "title": "团队周会",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 6,
+      "minute": 600
+    },
+    "end": null
+  }
+}

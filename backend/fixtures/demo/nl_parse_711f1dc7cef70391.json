@@ -1,0 +1,25 @@
+{
+  "status": "need_user",
+  "source": "rule",
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [],
+  "error": null,
+  "confidence": 0.85,
+  "text": "大后天下午5点交材料",
+  "draft": {
+    "title": "交材料",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 3,
+      "minute": 1020
+    },
+    "end": null
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "decision_type": "reschedule",
+  "confidence": 0.66,
+  "summary": "把逾期 3 天的「补交上月报表」放到明早 9 点，用一段完整的时间处理掉。",
+  "reasoning_tags": [
+    "procrastination"
+  ],
+  "suggestions": [
+    {
+      "id": "s1",
+      "kind": "move",
+      "target_record_id": "rec_demo_c",
+      "proposed_start": "2026-10-30T01:00:00+00:00",
+      "proposed_end": "2026-10-30T02:00:00+00:00",
+      "rationale": "原定时间是深夜，正好落在你状态较低的时候；移到明早 9 点的一段完整时间，这条报表就能一次做完，不用再顺延。",
+      "risk": "low"
+    }
+  ],
+  "intervention": {
+    "type": "reschedule_proposal",
+    "title": "这条挪到明早",
+    "message": "「补交上月报表」还挂着，原定在深夜时段。把它放到 10-30 早上 9:00-10:00 一段完整时间，今晚不用动它。",
+    "pet_line": "现在已经很晚了，这条留到明早我陪你一起看。",
+    "tone": "gentle",
+    "expires_at": "2026-10-30T02:00:00+00:00",
+    "actions": [
+      {
+        "label": "就按这个改",
+        "kind": "accept"
+      },
+      {
+        "label": "今晚先不了",
+        "kind": "snooze"
+      }
+    ]
+  },
+  "caveats": [
+    "当前已过 22:52，不建议今晚再开启这条任务。"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "status": "error",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [],
+  "error": {
+    "code": "NXC-NEED-LLM",
+    "message": "规则层无法可靠解析：『月底』没有确定的日期含义",
+    "hint": "请换用《支持的例句清单》里的写法；该功能将在接入模型后自动扩展"
+  },
+  "confidence": 0.0,
+  "text": "月底前交季度报告",
+  "draft": {
+    "title": null,
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": null,
+    "end": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "status": "error",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [],
+  "error": {
+    "code": "NXC-1",
+    "message": "结束时间不晚于开始时间",
+    "hint": "若跨天，请把结束日期写清楚，例如『今天晚上11点到明天凌晨1点』"
+  },
+  "confidence": 0.0,
+  "text": "今天晚上11点到1点值班",
+  "draft": {
+    "title": "值班",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 0,
+      "minute": 1380
+    },
+    "end": null
+  }
+}

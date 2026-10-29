@@ -1,0 +1,26 @@
+{
+  "status": "resolved",
+  "source": "llm",
+  "draft": {
+    "title": "值班",
+    "start_at": "2026-10-29T15:00:00+00:00",
+    "end_at": "2026-10-29T17:00:00+00:00",
+    "priority": 3
+  },
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "date_default_today",
+      "label": "未提到日期，暂按今天（2026-10-29）",
+      "field": "start_at"
+    },
+    {
+      "code": "end_cross_midnight",
+      "label": "结束时间1点早于开始时间23点，按跨夜处理，结束日期顺延到次日（2026-10-30）",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.6,
+  "text": "今天晚上11点到1点值班"
+}

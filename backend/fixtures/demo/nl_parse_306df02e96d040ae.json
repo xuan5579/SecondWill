@@ -1,0 +1,23 @@
+{
+  "status": "error",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [],
+  "error": {
+    "code": "NXC-T1",
+    "message": "发现 3 个时间点，无法确定哪两个构成起止",
+    "hint": "请写成『开始时间到结束时间』两个点"
+  },
+  "confidence": 0.0,
+  "text": "明天9点10点11点各一个会",
+  "draft": {
+    "title": null,
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": null,
+    "end": null
+  }
+}

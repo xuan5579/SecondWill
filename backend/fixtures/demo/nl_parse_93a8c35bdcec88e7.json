@@ -1,0 +1,33 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "cross_day",
+      "label": "跨天日程，已按写明的两个日期分别定位",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 1.0,
+  "text": "今天晚上11点到明天凌晨1点值班",
+  "draft": {
+    "title": "值班",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 0,
+      "minute": 1380
+    },
+    "end": {
+      "type": "relative",
+      "day_offset": 1,
+      "minute": 60
+    }
+  }
+}

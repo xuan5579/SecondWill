@@ -1,0 +1,40 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "no_period",
+      "label": "未说明上午/下午，按 24 小时制字面理解",
+      "field": "start_at"
+    },
+    {
+      "code": "cross_day",
+      "label": "跨天日程，已按写明的两个日期分别定位",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.9,
+  "text": "11月20日23:30到11月21日1:00上线",
+  "draft": {
+    "title": "上线",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "absolute",
+      "month": 11,
+      "day": 20,
+      "minute": 1410
+    },
+    "end": {
+      "type": "absolute",
+      "month": 11,
+      "day": 21,
+      "minute": 60
+    }
+  }
+}

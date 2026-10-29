@@ -1,0 +1,28 @@
+{
+  "status": "need_user",
+  "source": "llm",
+  "draft": {
+    "title": "开会",
+    "start_at": "2026-10-30T01:00:00+00:00",
+    "end_at": null,
+    "priority": 3
+  },
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [
+    {
+      "code": "date_default_tomorrow",
+      "label": "用户说“明天”，按当前时间的次日推算为 2026-10-30",
+      "field": "start_at"
+    },
+    {
+      "code": "time_am_default",
+      "label": "用户说“上午9点”，按上午 09:00 解释",
+      "field": "start_at"
+    }
+  ],
+  "error": null,
+  "confidence": 0.6,
+  "text": "明天上午9点到8点开会"
+}

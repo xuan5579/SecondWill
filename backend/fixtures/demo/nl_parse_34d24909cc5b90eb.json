@@ -1,0 +1,25 @@
+{
+  "status": "need_user",
+  "source": "rule",
+  "missing": [
+    "end_at"
+  ],
+  "assumptions": [],
+  "error": null,
+  "confidence": 0.85,
+  "text": "今天中午12点午饭",
+  "draft": {
+    "title": "午饭",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 0,
+      "minute": 720
+    },
+    "end": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [],
+  "error": null,
+  "confidence": 1.0,
+  "text": "12月1日上午9点到12点季度复盘",
+  "draft": {
+    "title": "季度复盘",
+    "priority": 3,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "absolute",
+      "month": 12,
+      "day": 1,
+      "minute": 540
+    },
+    "end": {
+      "type": "absolute",
+      "month": 12,
+      "day": 1,
+      "minute": 720
+    }
+  }
+}

@@ -1,0 +1,129 @@
+[
+  {
+    "case": "A · json_object 单独使用",
+    "request": {
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "http": 200,
+    "elapsed_sec": 3.22,
+    "ok": true,
+    "finish_reason": "stop",
+    "has_reasoning": true,
+    "content_len": 406,
+    "usage": {
+      "prompt_tokens": 217,
+      "completion_tokens": 412,
+      "total_tokens": 629,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 218
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 217
+    },
+    "valid_json": true,
+    "keys": [
+      "confidence",
+      "decision_type",
+      "suggestions",
+      "summary"
+    ]
+  },
+  {
+    "case": "B · json_object + thinking=enabled",
+    "request": {
+      "response_format": {
+        "type": "json_object"
+      },
+      "thinking": {
+        "type": "enabled"
+      }
+    },
+    "http": 200,
+    "elapsed_sec": 2.36,
+    "ok": true,
+    "finish_reason": "stop",
+    "has_reasoning": true,
+    "content_len": 447,
+    "usage": {
+      "prompt_tokens": 217,
+      "completion_tokens": 343,
+      "total_tokens": 560,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 116
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 217
+    },
+    "valid_json": true,
+    "keys": [
+      "confidence",
+      "decision_type",
+      "suggestions",
+      "summary"
+    ]
+  },
+  {
+    "case": "C · json_schema 强制（预期不支持）",
+    "request": {
+      "response_format": {
+        "type": "json_schema",
+        "json_schema": {
+          "name": "decision",
+          "schema": {
+            "type": "object",
+            "required": [
+              "decision_type"
+            ],
+            "properties": {
+              "decision_type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "http": 400,
+    "elapsed_sec": 0.26,
+    "ok": false,
+    "error": "{\"error\":{\"message\":\"This response_format type is unavailable now (request_id: eb0ace93-8512-4a59-afe9-0eea15c0b377)\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":\"invalid_request_error\"}}"
+  },
+  {
+    "case": "D · 无 response_format（基线对照）",
+    "request": {},
+    "http": 200,
+    "elapsed_sec": 3.96,
+    "ok": true,
+    "finish_reason": "stop",
+    "has_reasoning": true,
+    "content_len": 388,
+    "usage": {
+      "prompt_tokens": 195,
+      "completion_tokens": 688,
+      "total_tokens": 883,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 504
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 195
+    },
+    "valid_json": true,
+    "keys": [
+      "confidence",
+      "decision_type",
+      "suggestions",
+      "summary"
+    ]
+  }
+]

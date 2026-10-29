@@ -1,0 +1,27 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [],
+  "error": null,
+  "confidence": 1.0,
+  "text": "明天14:00到15:30客户沟通低优先级",
+  "draft": {
+    "title": "客户沟通",
+    "priority": 4,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 1,
+      "minute": 840
+    },
+    "end": {
+      "type": "relative",
+      "day_offset": 1,
+      "minute": 930
+    }
+  }
+}

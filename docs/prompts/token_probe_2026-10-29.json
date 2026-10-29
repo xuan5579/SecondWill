@@ -1,0 +1,47 @@
+[
+  {
+    "max_tokens": 4096,
+    "finish_reason": "stop",
+    "content_len": 1077,
+    "valid_json": true,
+    "completion_tokens": 1639,
+    "reasoning_tokens": 1111,
+    "elapsed_sec": 8.44
+  },
+  {
+    "max_tokens": 4096,
+    "finish_reason": "stop",
+    "content_len": 1336,
+    "valid_json": true,
+    "completion_tokens": 1811,
+    "reasoning_tokens": 1175,
+    "elapsed_sec": 8.86
+  },
+  {
+    "max_tokens": 4096,
+    "finish_reason": "stop",
+    "content_len": 1075,
+    "valid_json": true,
+    "completion_tokens": 2728,
+    "reasoning_tokens": 2194,
+    "elapsed_sec": 12.89
+  },
+  {
+    "max_tokens": 4096,
+    "finish_reason": "stop",
+    "content_len": 1255,
+    "valid_json": true,
+    "completion_tokens": 1867,
+    "reasoning_tokens": 1295,
+    "elapsed_sec": 8.82
+  },
+  {
+    "max_tokens": 4096,
+    "finish_reason": "stop",
+    "content_len": 1220,
+    "valid_json": true,
+    "completion_tokens": 2203,
+    "reasoning_tokens": 1601,
+    "elapsed_sec": 11.21
+  }
+]

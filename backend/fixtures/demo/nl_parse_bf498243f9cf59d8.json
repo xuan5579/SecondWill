@@ -1,0 +1,33 @@
+{
+  "status": "resolved",
+  "source": "rule",
+  "missing": [],
+  "assumptions": [
+    {
+      "code": "period_inherited",
+      "label": "结束时间按『下午』理解",
+      "field": "end_at"
+    }
+  ],
+  "error": null,
+  "confidence": 1.0,
+  "text": "后天下午2点到3点面试高优先级",
+  "draft": {
+    "title": "面试",
+    "priority": 2,
+    "start_at": null,
+    "end_at": null
+  },
+  "_relative": {
+    "start": {
+      "type": "relative",
+      "day_offset": 2,
+      "minute": 840
+    },
+    "end": {
+      "type": "relative",
+      "day_offset": 2,
+      "minute": 900
+    }
+  }
+}
