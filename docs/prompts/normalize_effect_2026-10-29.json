@@ -1,0 +1,77 @@
+{
+  "max_tokens": 4096,
+  "rows": [
+    {
+      "i": 1,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 2106,
+      "reasoning": 1653
+    },
+    {
+      "i": 2,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 2635,
+      "reasoning": 1956
+    },
+    {
+      "i": 3,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 2295,
+      "reasoning": 1639
+    },
+    {
+      "i": 4,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 1501,
+      "reasoning": 981
+    },
+    {
+      "i": 5,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 1882,
+      "reasoning": 1255
+    },
+    {
+      "i": 6,
+      "l1_without_norm": false,
+      "normalized": 0,
+      "notes": [],
+      "call": "ok",
+      "ok": true,
+      "level": "ok",
+      "fr": "stop",
+      "tokens": 1428,
+      "reasoning": 905
+    }
+  ]
+}
