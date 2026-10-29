@@ -1,0 +1,30 @@
+{
+  "name": "每日规划助手 · AI 执行教练",
+  "short_name": "规划助手",
+  "description": "冲突检测 + 拖延信号 + 宠物陪伴：把计划落到今天，而不是留在清单里。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#12151c",
+  "theme_color": "#863bff",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

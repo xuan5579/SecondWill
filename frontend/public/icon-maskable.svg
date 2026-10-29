@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- maskable 版本：背景铺满整块（允许被裁到边缘），
+       主体缩到中心 ~76%，落在 Android/Chrome 的"安全区"里，
+       否则自适应图标一裁剪就会把耳朵削掉。 -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7e14ff"/>
+      <stop offset="1" stop-color="#863bff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <g transform="translate(256 256) scale(0.76) translate(-256 -256)">
+    <path d="M148 216 L152 116 L226 172 Z" fill="#fdfbff"/>
+    <path d="M364 216 L360 116 L286 172 Z" fill="#fdfbff"/>
+
+    <circle cx="256" cy="278" r="132" fill="#fdfbff"/>
+
+    <circle cx="209" cy="256" r="19" fill="#2b2340"/>
+    <circle cx="303" cy="256" r="19" fill="#2b2340"/>
+
+    <path d="M256 300 l-15 18 h30 z" fill="#863bff"/>
+    <path d="M240 328 q16 14 32 0" stroke="#2b2340" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+    <g stroke="#c9bde8" stroke-width="6" stroke-linecap="round">
+      <path d="M150 286 h44"/>
+      <path d="M146 316 h40"/>
+      <path d="M362 286 h-44"/>
+      <path d="M366 316 h-40"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7e14ff"/>
+      <stop offset="1" stop-color="#863bff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- 耳朵画在脸之前，让脸盖住耳根 -->
+  <path d="M148 216 L152 116 L226 172 Z" fill="#fdfbff"/>
+  <path d="M364 216 L360 116 L286 172 Z" fill="#fdfbff"/>
+
+  <circle cx="256" cy="278" r="132" fill="#fdfbff"/>
+
+  <!-- 眼睛：宠物六档情绪共用这张脸，中性表情 -->
+  <circle cx="209" cy="256" r="19" fill="#2b2340"/>
+  <circle cx="303" cy="256" r="19" fill="#2b2340"/>
+
+  <path d="M256 300 l-15 18 h30 z" fill="#863bff"/>
+  <path d="M240 328 q16 14 32 0" stroke="#2b2340" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+  <g stroke="#c9bde8" stroke-width="6" stroke-linecap="round">
+    <path d="M150 286 h44"/>
+    <path d="M146 316 h40"/>
+    <path d="M362 286 h-44"/>
+    <path d="M366 316 h-40"/>
+  </g>
+</svg>
