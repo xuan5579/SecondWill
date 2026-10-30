@@ -3,6 +3,11 @@
 > 从 Tkinter 桌面版重制为 Web 全栈版。定位不是待办清单，而是**拖延干预系统**：
 > 分析执行数据 → 检测冲突 → 给出重排建议 → 主动干预 → 用宠物状态反馈执行力。
 
+**命名说明**：对外展示名统一为 **SecondWill · 第二意志 · AI 执行教练**（页面标题、窗口标题、PWA 清单、文档页眉）。
+仓库**内部代号沿用原名**：后端 pip 包名 `daily-planner-backend`（`backend/pyproject.toml`）与测试临时目录
+`daily_planner_test`（`backend/tests/conftest.py`）均不改名 —— 它们不是展示文案，改名会连带影响 pip 安装名与
+`egg-info` 产物，风险大于收益。
+
 架构设计见 [`docs/01-架构设计.md`](docs/01-架构设计.md)。
 
 ---
