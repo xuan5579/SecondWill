@@ -1,4 +1,4 @@
-# 每日规划助手 · AI 执行教练
+# SecondWill · 第二意志 · AI 执行教练
 
 > 从 Tkinter 桌面版重制为 Web 全栈版。定位不是待办清单，而是**拖延干预系统**：
 > 分析执行数据 → 检测冲突 → 给出重排建议 → 主动干预 → 用宠物状态反馈执行力。
@@ -287,7 +287,7 @@ DEMO_RECORD=true  # 把真实调用结果录下来，供以后回放
 | 方式 | 怎么用 | 额外依赖 |
 | --- | --- | --- |
 | ① 独立应用窗口（推荐） | 双击 `start.bat`（Windows）/ `./start.sh`（macOS、Linux） | 无（用系统已有的 Chrome / Edge） |
-| ② 安装为桌面应用（PWA） | 打开页面 → 浏览器菜单「安装 每日规划助手」 | 无 |
+| ② 安装为桌面应用（PWA） | 打开页面 → 浏览器菜单「安装 SecondWill」 | 无 |
 | ③ 原生窗口（可选） | `pip install pywebview && python desktop.py` | pywebview |
 
 ### ① 独立应用窗口
@@ -306,7 +306,7 @@ DEMO_RECORD=true  # 把真实调用结果录下来，供以后回放
 ### ② 安装为桌面应用（PWA）
 
 `frontend/public/manifest.json` 提供了名称、图标与 `display: standalone`，
-所以在 Chrome / Edge 里点菜单的「安装 每日规划助手」，就能得到一个独立图标，
+所以在 Chrome / Edge 里点菜单的「安装 SecondWill」，就能得到一个独立图标，
 打开后观感与 `--app` 窗口一致，还能固定到任务栏 / 程序坞。
 
 图标是**纯文本 SVG**（`icon.svg` / `icon-maskable.svg`）——
