@@ -139,6 +139,31 @@ curl -s 127.0.0.1:8000/api/state | python -m json.tool
 
 ## 10 分钟极速复现指南
 
+### 复现五要素
+
+| 要素 | 内容 |
+|---|---|
+| **环境要求** | Python ≥3.11（`backend/pyproject.toml` 的 `requires-python`）、Node ≥20.19。本机实测：Python 3.13.14、Node v22.22.2、npm 10.9.7（前端基于 Vite 8，更低的 Node 未验证） |
+| **依赖安装** | 后端 `cd backend && pip install -e ".[dev]"`；前端 `cd frontend && npm install`。Windows 上一行搞定用 `python scripts/dev.py`（见下方「一键启动」） |
+| **环境变量** | `cp .env.example .env`（Windows：`copy .env.example .env`），各变量含义见下表。**不配也能跑**，只有接真实模型才需要填 Key |
+| **无 API Key 可跑通闭环** | 不填 Key 时决策器走规则降级（`source=fallback`），冲突检测、宠物情绪、干预节奏、反馈回流全部可用，端到端闭环完整跑通 |
+| **DEMO_MODE 开关** | `DEMO_MODE=true`：决策走预录制的 30 条 fixture 回放，零网络请求、离线可答辩；`DEMO_RECORD=true`：把真实调用录制下来供日后回放；重录 `python scripts/record_demo.py --clean --decisions --nl-llm`。**改完 `.env` 必须重启后端**（`load_dotenv` 只在导入时执行一次） |
+
+`.env.example` 变量说明（默认值取自 `backend/app/core/config.py`）：
+
+| 变量 | 默认值 | 作用 |
+|---|---|---|
+| `DEMO_MODE` | `false` | `true` 时决策走预录制回放，不真实调用模型（答辩/离线演示） |
+| `DEMO_RECORD` | `false` | `true` 时把真实调用结果录制下来，供以后回放 |
+| `DATABASE_PATH` | `data/app.db` | SQLite 本地文件位置 |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | 允许的前端源，按 Origin 逐字节匹配 |
+| `DEEPSEEK_API_KEY` | 无 | 接真实模型才需要；不填即走降级路径。`.env` 已被 `.gitignore` 忽略，不会进仓库 |
+| `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | DeepSeek 接口地址 |
+| `DEEPSEEK_MODEL` | `deepseek-flash` | 该账号实测只开放 `deepseek-flash` / `deepseek-v4-pro`；旧的 `deepseek-chat` 已退役，写了会直接 400 |
+| `LLM_TIMEOUT_SEC` | `15` | 单次调用超时秒数 |
+| `LLM_MAX_TOKENS` | `4096` | 推理与输出共用额度；实测 2048 会被推理 token 吃满导致空 content |
+| `LLM_TEMPERATURE` | `0.2` | 决策场景偏好低随机 |
+
 > **统一用 `127.0.0.1`，不要用 `localhost`。**
 > 本机 `localhost` 优先解析到 IPv6 `::1`，而后端只绑定 IPv4 `127.0.0.1`；
 > 同时 CORS 白名单是按 Origin 逐字节匹配的，`http://localhost:5173` 与
