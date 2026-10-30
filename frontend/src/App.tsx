@@ -91,7 +91,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div>
-          <h1>每日规划助手</h1>
+          <h1>SecondWill · 第二意志</h1>
           <p className="subtitle">AI 执行教练 · v1.0 最小闭环 · P5 节奏控制与反馈回流</p>
         </div>
         <div className="header-actions">

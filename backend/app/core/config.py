@@ -63,7 +63,7 @@ class Settings:
     LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 
     # 应用
-    APP_TITLE: str = "每日规划助手 · AI 执行教练"
+    APP_TITLE: str = "SecondWill · 第二意志 · AI 执行教练"
     API_PREFIX: str = "/api"
 
 
