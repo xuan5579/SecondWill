@@ -384,6 +384,8 @@ h1 {
   gap: 8px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  /* 带标签的字段比裸输入框高，底部对齐才能让标题框和它们齐平 */
+  align-items: flex-end;
 }
 
 input,
@@ -406,6 +408,15 @@ select:focus {
 .record-form input:not([type='datetime-local']) {
   flex: 1;
   min-width: 200px;
+}
+
+/* 开始/结束/优先级的可见标签（样式对齐 QuickAdd 的 .qa-field） */
+.rf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-dim);
 }
 
 .btn {
@@ -906,6 +917,14 @@ select:focus {
 
 .fb-hint.muted {
   color: var(--warn);
+}
+
+/* 提示条里"标题在左、关闭在右"的一行。 */
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* 闸门拦下干预时的说明。它不是错误 —— 用中性色，别吓到人。 */

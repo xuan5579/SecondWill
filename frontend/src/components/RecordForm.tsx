@@ -63,29 +63,41 @@ export default function RecordForm({ onCreate }: Props) {
         placeholder="要做什么？"
         aria-label="标题"
       />
-      <input
-        type="datetime-local"
-        value={start}
-        onChange={(e) => setStart(e.target.value)}
-        aria-label="开始时间"
-      />
-      <input
-        type="datetime-local"
-        value={end}
-        onChange={(e) => setEnd(e.target.value)}
-        aria-label="结束时间"
-      />
-      <select
-        value={priority}
-        onChange={(e) => setPriority(Number(e.target.value))}
-        aria-label="优先级"
-      >
-        {[1, 2, 3, 4, 5].map((p) => (
-          <option key={p} value={p}>
-            P{p}
-          </option>
-        ))}
-      </select>
+      {/* 开始/结束/优先级原本只有 aria-label（屏幕阅读器能读、人眼看不见），
+          空值的 datetime-local 会让浏览器画出 yyyy-mm-dd 占位，看上去像没做完。
+          这里补上可见标签，与 QuickAdd 的 qa-field 保持一致。 */}
+      <label className="rf-field">
+        <span>开始</span>
+        <input
+          type="datetime-local"
+          value={start}
+          onChange={(e) => setStart(e.target.value)}
+          aria-label="开始时间"
+        />
+      </label>
+      <label className="rf-field">
+        <span>结束</span>
+        <input
+          type="datetime-local"
+          value={end}
+          onChange={(e) => setEnd(e.target.value)}
+          aria-label="结束时间"
+        />
+      </label>
+      <label className="rf-field">
+        <span>优先级</span>
+        <select
+          value={priority}
+          onChange={(e) => setPriority(Number(e.target.value))}
+          aria-label="优先级"
+        >
+          {[1, 2, 3, 4, 5].map((p) => (
+            <option key={p} value={p}>
+              P{p}
+            </option>
+          ))}
+        </select>
+      </label>
       <button className="btn primary" type="submit" disabled={busy}>
         {busy ? '添加中…' : '添加'}
       </button>

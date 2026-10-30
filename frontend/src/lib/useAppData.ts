@@ -1,10 +1,61 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, streamUrl } from './api'
-import type { AppState, DecisionEnvelope, LatestDecision, RecordItem } from '../types/api'
+import type {
+  AppState,
+  DecisionEnvelope,
+  DecisionPayload,
+  LatestDecision,
+  RecordItem,
+} from '../types/api'
 
 export type ChannelMode = 'connecting' | 'live' | 'polling'
 
 const POLL_MS = Number(import.meta.env.VITE_POLL_MS ?? 5000)
+
+/** 决策数据的形状归一 —— 这是两个来源进 state 前唯一的收口点。
+ *
+ * 后端有两处给出的是**扁平**结构（payload 的字段摊平在顶层，没有 `payload` 这一层）：
+ *   1. SSE 的 `decision` 广播（`services/events.py::publish_decision`）
+ *   2. `GET /api/decisions/latest`（它把 `row.payload` 直接展开返回）
+ * 而 POST /api/decisions 的响应是**嵌套**的（有 `payload`）。
+ * 卡片组件按 DecisionEnvelope 读 `decision.payload.intervention`，
+ * 扁平结构下 `payload` 是 undefined，一解引用就抛 TypeError ——
+ * 在没有任何 ErrorBoundary 的年代，这一抛就是整页黑屏。
+ *
+ * 放在这里而不是改后端，是为了不动对外契约：广播与 /latest 的历史形状保持不变。
+ */
+function normalizeDecision(raw: unknown): DecisionEnvelope {
+  const d = (raw ?? {}) as Record<string, unknown>
+  // 已经是标准形状就原样放过（POST 响应走这条路）
+  if (d.payload) return d as unknown as DecisionEnvelope
+
+  const pick = <T,>(key: string, fallback: T): T =>
+    (d[key] === undefined || d[key] === null ? fallback : d[key]) as T
+
+  return {
+    source: pick<DecisionEnvelope['source']>('source', 'fallback'),
+    attempts: pick('attempts', 0),
+    issues: pick<string[]>('issues', []),
+    payload: {
+      schema_version: pick('schema_version', '1.0'),
+      decision_type: pick<DecisionPayload['decision_type']>('decision_type', 'no_action'),
+      confidence: pick('confidence', 0),
+      summary: pick('summary', ''),
+      reasoning_tags: pick<string[]>('reasoning_tags', []),
+      suggestions: pick<DecisionPayload['suggestions']>('suggestions', []),
+      intervention: pick<DecisionPayload['intervention']>('intervention', null),
+      caveats: pick<string[]>('caveats', []),
+    },
+    intervention_id: pick('intervention_id', null),
+    delivered: d.delivered === false ? false : true,
+    reason: pick<string | undefined>('reason', undefined),
+    triggered: pick<boolean | undefined>('triggered', undefined),
+    trigger: pick<string | undefined>('trigger', undefined),
+    request_id: pick<string | undefined>('request_id', undefined),
+    rhythm: pick<DecisionEnvelope['rhythm']>('rhythm', undefined),
+    blocked_by: pick<DecisionEnvelope['blocked_by']>('blocked_by', undefined),
+  }
+}
 
 /** 应用数据加载 + 实时通道。
  *
@@ -66,7 +117,7 @@ export function useAppData() {
   const loadLatestDecision = useCallback(async () => {
     try {
       const latest: LatestDecision = await api.latestDecision()
-      if (latest.has_decision) setDecision(latest)
+      if (latest.has_decision) setDecision(normalizeDecision(latest))
     } catch {
       // 决策是旁路：拿不到就当没有，绝不因此让整个页面报错
     }
@@ -102,7 +153,7 @@ export function useAppData() {
     // 若这里也只推"变了"再让前端去拉，会出现"宠物已经回落但卡片还在说有冲突"的错位。
     es.addEventListener('decision', (ev) => {
       try {
-        setDecision(JSON.parse((ev as MessageEvent).data) as DecisionEnvelope)
+        setDecision(normalizeDecision(JSON.parse((ev as MessageEvent).data)))
       } catch {
         void loadLatestDecision()
       }

@@ -39,6 +39,9 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(readTheme)
   /** 闸门/降权拦下干预时的说明文案。它不是错误，所以不走 error 通道。 */
   const [hint, setHint] = useState<string | null>(null)
+  /** 模型往返实测约 9 秒。这期间界面毫无变化，会被当成"点了没反应" ——
+   *  所以按钮必须自己说清楚在忙，而不是靠一张全屏遮罩（那会挡住演示画面）。 */
+  const [asking, setAsking] = useState(false)
   const run = useActions(reload, setError)
 
   useEffect(() => {
@@ -65,8 +68,10 @@ export default function App() {
   const onRemove = (id: string) => run(() => api.deleteRecord(id))
 
   /** 手动问一次决策器。手动触发绕过触发判定，但仍受节奏闸门约束。 */
-  const onAskDecision = () =>
-    run(async () => {
+  const onAskDecision = () => {
+    if (asking) return
+    setAsking(true)
+    void run(async () => {
       const res = await api.createDecision('manual')
       if (res.delivered === false) {
         // 被闸门拦下时后端没有落干预记录，也就没有可反馈的卡片。
@@ -77,7 +82,8 @@ export default function App() {
         setHint(null)
         setDecision(res)
       }
-    })
+    }).finally(() => setAsking(false))
+  }
 
   /** 采用建议：直接改日程，走与手动编辑完全相同的链路 —— 不另起一条。 */
   const onApplySuggestion = (recordId: string, start: string, end: string) =>
@@ -86,6 +92,18 @@ export default function App() {
   const conflicts = state?.signals.conflicts ?? []
   const conflictIds = new Set(conflicts.flatMap((c) => c.record_ids))
   const hardCount = conflicts.filter((c) => c.hard).length
+
+  /** 模型被允许说"这次不用打扰"（`decision_type = no_action`）。
+   *
+   * 这种返回后端照常落库、照常广播，但 `InterventionCard` 刻意不渲染卡片 ——
+   * 否则等于替模型撤销它自己的判断。代价是：点一次「问决策器」，等 9 秒，
+   * 画面纹丝不动（连 hint 都不会出现，因为它是"送达了"，不是"被拦下"）。
+   * 沉默本身是对的，但**沉默必须被看见**，否则用户只会以为程序坏了。
+   * 这里只转述模型的原话，不替它做任何决定，也不给它任何按钮。 */
+  const silent =
+    decision && decision.delivered !== false && decision.payload?.decision_type === 'no_action'
+      ? decision.payload.summary || '模型判断本轮不需要打扰'
+      : null
 
   return (
     <div className="app">
@@ -117,8 +135,13 @@ export default function App() {
           <a className="btn small" href={exportCsvUrl}>
             导出 CSV
           </a>
-          <button className="btn small" onClick={() => void onAskDecision()}>
-            问决策器
+          <button
+            className="btn small"
+            onClick={onAskDecision}
+            disabled={asking}
+            title="手动问一次决策器。模型往返约需 9 秒，期间按钮会显示「问决策器中…」"
+          >
+            {asking ? '问决策器中…' : '问决策器'}
           </button>
           <button className="btn small" onClick={() => void reload()} disabled={loading}>
             {loading ? '刷新中…' : '刷新'}
@@ -141,6 +164,24 @@ export default function App() {
       {hint && (
         <div className="banner-info" role="status">
           暂时没有新建议：{hint}
+        </div>
+      )}
+
+      {silent && (
+        <div className="banner-info" role="status">
+          <div className="banner-row">
+            <span>
+              本轮决策：<strong>不打扰</strong>
+            </span>
+            <button
+              className="btn small ghost"
+              onClick={() => setDecision(null)}
+              title="关掉这条提示（不会改变任何数据）"
+            >
+              关闭
+            </button>
+          </div>
+          <div className="banner-hint">{silent}</div>
         </div>
       )}
 
