@@ -15,7 +15,7 @@ if [ -z "$PY" ]; then
   if command -v python3 >/dev/null 2>&1; then PY=python3; else PY=python; fi
 fi
 
-echo "Starting Daily Planner ...  app window :5173  backend :8000"
+echo "Starting SecondWill ...  app window :5173  backend :8000"
 echo "(Ctrl+C to stop the servers)"
 echo
 

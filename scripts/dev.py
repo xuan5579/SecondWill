@@ -308,7 +308,7 @@ def open_app_window(url: str) -> str:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="启动每日规划助手开发环境")
+    ap = argparse.ArgumentParser(description="启动 SecondWill 开发环境")
     ap.add_argument("--backend", action="store_true", help="只启动后端")
     ap.add_argument("--no-kill", action="store_true", help="不清理端口上的旧进程")
     ap.add_argument("--open", action="store_true", help="就绪后自动打开浏览器（双击启动时用）")

@@ -3,7 +3,7 @@ rem Double-click launcher: backend :8000 + frontend :5173, opens browser when re
 rem ASCII-only on purpose: cmd parses .bat as GBK, so Chinese comments would garble
 rem into garbage commands and print a wall of "not recognized" errors.
 chcp 65001 >nul
-title Daily Planner - dev server
+title SecondWill - dev server
 cd /d "%~dp0"
 
 set PYTHONIOENCODING=utf-8
@@ -12,7 +12,7 @@ rem Prefer the interpreter this project already uses; fall back to PATH python.
 set "PY=C:\Users\Y7000P\.workbuddy\binaries\python\envs\default\Scripts\python.exe"
 if not exist "%PY%" set "PY=python"
 
-echo Starting Daily Planner ...  backend :8000  frontend :5173
+echo Starting SecondWill ...  backend :8000  frontend :5173
 echo (Ctrl+C to stop, or just close this window)
 echo.
 

@@ -119,7 +119,7 @@ def main() -> int:
             pass
 
     window = webview.create_window(
-        title="每日规划助手 · AI 执行教练",
+        title="SecondWill · 第二意志 · AI 执行教练",
         url=dev.APP_URL,
         width=1280,
         height=860,
