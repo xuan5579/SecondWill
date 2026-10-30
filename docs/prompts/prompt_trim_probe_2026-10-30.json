@@ -1,0 +1,74 @@
+[
+  {
+    "label": "A-旧全量",
+    "prompt_chars": 4000,
+    "n_records": 25,
+    "rendered_records": 25,
+    "finish_reason": "stop",
+    "reasoning_tokens": 396,
+    "completion_tokens": 751,
+    "prompt_tokens": 2009,
+    "one_shot_valid": true,
+    "issues": []
+  },
+  {
+    "label": "A-旧全量",
+    "prompt_chars": 4000,
+    "n_records": 25,
+    "rendered_records": 25,
+    "finish_reason": "stop",
+    "reasoning_tokens": 501,
+    "completion_tokens": 888,
+    "prompt_tokens": 2009,
+    "one_shot_valid": true,
+    "issues": []
+  },
+  {
+    "label": "A-旧全量",
+    "prompt_chars": 4000,
+    "n_records": 25,
+    "rendered_records": 25,
+    "finish_reason": "stop",
+    "reasoning_tokens": 312,
+    "completion_tokens": 705,
+    "prompt_tokens": 2009,
+    "one_shot_valid": true,
+    "issues": []
+  },
+  {
+    "label": "B-新14条",
+    "prompt_chars": 3464,
+    "n_records": 14,
+    "rendered_records": 14,
+    "finish_reason": "stop",
+    "reasoning_tokens": 442,
+    "completion_tokens": 771,
+    "prompt_tokens": 1703,
+    "one_shot_valid": true,
+    "issues": []
+  },
+  {
+    "label": "B-新14条",
+    "prompt_chars": 3464,
+    "n_records": 14,
+    "rendered_records": 14,
+    "finish_reason": "stop",
+    "reasoning_tokens": 91,
+    "completion_tokens": 440,
+    "prompt_tokens": 1703,
+    "one_shot_valid": true,
+    "issues": []
+  },
+  {
+    "label": "B-新14条",
+    "prompt_chars": 3464,
+    "n_records": 14,
+    "rendered_records": 14,
+    "finish_reason": "stop",
+    "reasoning_tokens": 349,
+    "completion_tokens": 718,
+    "prompt_tokens": 1703,
+    "one_shot_valid": true,
+    "issues": []
+  }
+]

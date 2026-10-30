@@ -1,0 +1,26 @@
+[
+  {
+    "prompt_chars": 4925,
+    "reasoning_tokens": 801,
+    "completion_tokens": 1146,
+    "finish_reason": "stop",
+    "hit_ceiling": false,
+    "one_shot_valid": true
+  },
+  {
+    "prompt_chars": 4925,
+    "reasoning_tokens": 374,
+    "completion_tokens": 787,
+    "finish_reason": "stop",
+    "hit_ceiling": false,
+    "one_shot_valid": true
+  },
+  {
+    "prompt_chars": 4925,
+    "reasoning_tokens": 870,
+    "completion_tokens": 1328,
+    "finish_reason": "stop",
+    "hit_ceiling": false,
+    "one_shot_valid": true
+  }
+]
