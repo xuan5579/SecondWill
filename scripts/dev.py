@@ -55,6 +55,24 @@ NODE_GLOB_DIR = Path(os.path.expanduser("~/.workbuddy/binaries/node/versions"))
 # --------------------------------------------------------------------------- #
 # 环境准备
 # --------------------------------------------------------------------------- #
+def ensure_streams() -> None:
+    """无控制台启动时（pythonw.exe）把 print 重定向到日志文件。
+
+    pythonw 下 `sys.stdout is None`，`print()` 会静默丢弃或直接抛
+    AttributeError —— 桌面图标走的就是 pythonw（否则会有一个黑窗口跟着），
+    所以这里必须兜住，否则"点了图标没反应"就没有任何线索可查。
+    """
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    logdir = ROOT / ".workbuddy" / "logs"
+    logdir.mkdir(parents=True, exist_ok=True)
+    fh = open(logdir / "launcher.log", "a", encoding="utf-8", buffering=1)
+    if sys.stdout is None:
+        sys.stdout = fh
+    if sys.stderr is None:
+        sys.stderr = fh
+
+
 def find_node_bin() -> Path | None:
     """定位 node / npm 所在目录。找不到就返回 None，交给前端启动时报错。"""
     if shutil.which("npm"):
@@ -156,6 +174,11 @@ def kill_port(port: int) -> bool:
             return True
     print(f"  警告：端口 {port} 仍被占用（{listening_pids(port)}）", file=sys.stderr)
     return False
+
+
+def services_up() -> bool:
+    """两个服务是否**都**已经在跑（用于 --reuse 快速放行）。"""
+    return probe(BACKEND_HEALTH, timeout=1.0) and probe(APP_URL, timeout=1.0)
 
 
 def probe(url: str, timeout: float = 40.0) -> bool:
@@ -316,13 +339,40 @@ def main() -> int:
         "--app", action="store_true",
         help="用 Chrome / Edge 的 --app 模式打开独立窗口（无地址栏、无标签页）",
     )
+    ap.add_argument(
+        "--reuse", action="store_true",
+        help="若服务已经在跑，直接开窗口，**不重启**（桌面图标每次点击都走这条）",
+    )
+    ap.add_argument("--stop", action="store_true", help="停掉 8000/5173 上的服务后退出")
     args = ap.parse_args()
+    ensure_streams()
+
+    print(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] dev.py {' '.join(sys.argv[1:])}")
+    if args.stop:
+        print("停止 SecondWill …")
+        ok_b = kill_port(BACKEND_PORT)
+        ok_f = kill_port(FRONTEND_PORT)
+        if ok_b and ok_f:
+            print("已停止（8000 / 5173 均已释放）。")
+            return 0
+        print("端口未能完全释放，请稍后重试。", file=sys.stderr)
+        return 1
 
     if not (BACKEND / "app" / "main.py").exists():
         print(f"找不到后端入口：{BACKEND / 'app' / 'main.py'}（脚本位置不对？）", file=sys.stderr)
         return 1
 
     env = build_env()
+
+    # --reuse：服务已经在跑就直接开窗口，绝不 kill_port。
+    # 桌面图标双击第二次、第三次都应该"秒开"，而不是把人正在看的页面重启一遍。
+    if args.reuse and services_up():
+        print("服务已在运行，直接打开窗口（未重启）。")
+        if args.app:
+            print("  " + open_app_window(APP_URL))
+        elif args.open:
+            webbrowser.open(APP_URL)
+        return 0
 
     if not args.no_kill:
         print("清理端口…")
