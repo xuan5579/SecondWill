@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ConflictList from './components/ConflictList'
+import DayTimeline from './components/DayTimeline'
 import InterventionCard from './components/InterventionCard'
 import PetPanel from './components/PetPanel'
 import QuickAdd from './components/QuickAdd'
@@ -159,64 +160,98 @@ export default function App() {
         </div>
       )}
 
-      <PetPanel state={state} />
-
-      {hint && (
-        <div className="banner-info" role="status">
-          暂时没有新建议：{hint}
-        </div>
-      )}
-
-      {silent && (
-        <div className="banner-info" role="status">
-          <div className="banner-row">
-            <span>
-              本轮决策：<strong>不打扰</strong>
-            </span>
-            <button
-              className="btn small ghost"
-              onClick={() => setDecision(null)}
-              title="关掉这条提示（不会改变任何数据）"
-            >
-              关闭
-            </button>
+      {/* 双栏：左侧是「日程台账」，右侧是「执行教练舞台」。
+          宠物与决策卡片同居右栏，是为了让"猫在说话"这件事在视觉上成立 ——
+          决策不再是一张飘在页面里的卡片，而是这只猫给出的判断。 */}
+      <div className="stage">
+        <main className="col-main">
+          {/* 录入区合成一块"控制台"玻璃卡：一句话解析与手动表单放在同一个容器里，
+              否则两排裸控件直接铺在背景上，页面上半截会显得没有骨架。 */}
+          <section className="compose">
+            <QuickAdd onCreate={onCreate} />
+            <RecordForm onCreate={onCreate} />
+          </section>
+          <div className="col-head">
+            <h2>今日日程</h2>
+            <span className="col-head-count">{records.length} 条</span>
           </div>
-          <div className="banner-hint">{silent}</div>
-        </div>
-      )}
+          <RecordList
+            records={records}
+            conflictIds={conflictIds}
+            onUpdate={onUpdate}
+            onComplete={onComplete}
+            onRemove={onRemove}
+          />
+          <DayTimeline records={records} />
+        </main>
 
-      <InterventionCard
-        decision={decision}
-        records={records}
-        onApply={onApplySuggestion}
-        onDismiss={() => setDecision(null)}
-        onFeedback={(kind) => {
-          // 反馈已经写进事件流与反馈画像，下一轮决策会读到。
-          // 这里只做一件事：让用户知道系统记下了。
-          if (kind === 'mute') setHint('已记下：这类建议被忽略够次数后将不再出现')
-          else setHint(null)
-        }}
-      />
+        <aside className="col-side">
+          <PetPanel state={state} thinking={asking} />
 
-      {hardCount > 0 && (
-        <div className="banner-warn">
-          检测到 {hardCount} 处时间重叠。日程暂时还能保存，决策器已在后台给出重排建议。
-        </div>
-      )}
+          {hint && (
+            <div className="banner-info" role="status">
+              暂时没有新建议：{hint}
+            </div>
+          )}
 
-      <ConflictList conflicts={conflicts} records={records} />
+          {silent && (
+            <div className="banner-info" role="status">
+              <div className="banner-row">
+                <span>
+                  本轮决策：<strong>不打扰</strong>
+                </span>
+                <button
+                  className="btn small ghost"
+                  onClick={() => setDecision(null)}
+                  title="关掉这条提示（不会改变任何数据）"
+                >
+                  关闭
+                </button>
+              </div>
+              <div className="banner-hint">{silent}</div>
+            </div>
+          )}
 
-      <QuickAdd onCreate={onCreate} />
+          {/* 等待期间不渲染上一轮的卡片：它马上会被替换，
+              留在原地既抢注意力，又把右栏顶出视口。去掉之后宠物
+              会自动恢复成大尺寸并亮起思考环，转场就是"猫抬起头开始想"。 */}
+          {!asking && (
+            <InterventionCard
+              decision={decision}
+              records={records}
+              onApply={onApplySuggestion}
+              onDismiss={() => setDecision(null)}
+              onFeedback={(kind) => {
+                // 反馈已经写进事件流与反馈画像，下一轮决策会读到。
+                // 这里只做一件事：让用户知道系统记下了。
+                if (kind === 'mute') setHint('已记下：这类建议被忽略够次数后将不再出现')
+                else setHint(null)
+              }}
+            />
+          )}
 
-      <RecordForm onCreate={onCreate} />
+          {hardCount > 0 && (
+            <div className="banner-warn">
+              检测到 {hardCount} 处时间重叠。日程暂时还能保存，决策器已在后台给出重排建议。
+            </div>
+          )}
 
-      <RecordList
-        records={records}
-        conflictIds={conflictIds}
-        onUpdate={onUpdate}
-        onComplete={onComplete}
-        onRemove={onRemove}
-      />
+          <ConflictList conflicts={conflicts} records={records} />
+        </aside>
+      </div>
+
+      {/* 页脚：把"数据在哪、跑的是什么"写在明面上。
+          它同时承担一个版式职责 —— 让页面底部有收口，而不是内容说完就断在空白里。 */}
+      <footer className="app-footer">
+        <span className="foot-item">
+          <i className={`foot-dot foot-${channel}`} />
+          {channel === 'live' ? '实时通道已连接' : channel === 'polling' ? '轮询降级中' : '连接中'}
+        </span>
+        <span className="foot-item">DeepSeek · 决策契约 v1.0</span>
+        <span className="foot-item">本地 SQLite · 日程不出这台机器</span>
+        <span className="foot-grow" />
+        <span className="foot-item dim">SecondWill v1.0</span>
+      </footer>
     </div>
   )
 }

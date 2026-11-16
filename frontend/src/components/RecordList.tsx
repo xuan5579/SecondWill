@@ -161,14 +161,19 @@ function Row({
         <span className={`badge badge-${item.status}`}>
           {STATUS_LABEL[item.status] ?? item.status}
         </span>
-        <span className="badge muted">P{item.priority}</span>
+        <span className="badge pri" data-p={item.priority}>
+          P{item.priority}
+        </span>
         {isConflict && <span className="badge badge-soft">冲突</span>}
-        {item.tags.map((t) => (
-          <span key={t} className="badge tag">
-            {t}
-          </span>
-        ))}
-        <button className="btn small" onClick={open}>
+        {/* 标签里如果本来就写着"冲突"，此时已经有一个冲突徽标了，不重复渲染 */}
+        {item.tags
+          .filter((t) => !(isConflict && t === '冲突'))
+          .map((t) => (
+            <span key={t} className="badge tag">
+              {t}
+            </span>
+          ))}
+        <button className="btn small edit-btn" onClick={open}>
           编辑
         </button>
         {item.status !== 'done' && (
@@ -176,7 +181,7 @@ function Row({
             完成
           </button>
         )}
-        <button className="btn small danger" onClick={() => void onRemove(item.id)}>
+        <button className="btn small danger del-btn" onClick={() => void onRemove(item.id)}>
           删除
         </button>
       </div>

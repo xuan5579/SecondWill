@@ -1,39 +1,84 @@
 :root {
-  /* 沿用桌面版的深色基调作为 v1.0 默认主题 */
-  --bg: #14151a;
-  --surface: #1c1e25;
-  --surface-2: #23262f;
-  --border: #31353f;
-  --text: #d7dae0;
-  --text-dim: #8b90a0;
-  --accent: #7f77dd;
-  --accent-dim: rgba(127, 119, 221, 0.16);
-  --done: #5dcaa5;
-  --pending: #85b7eb;
-  --danger: #f09595;
-  --warn: #ef9f27;
+  /* ---- 炭黑 + 暗紫玻璃拟态 ----
+     底色是近黑的冷灰蓝，光只从"上方偏中"和"右下"两个方向来；
+     所有卡片都是半透明玻璃，靠 1px 的高光边和极淡的外发光分层次，
+     而不是靠"更亮一档的灰色块"——后者是后台管理系统的观感来源。 */
+
+  --bg: #07070c;
+  --surface: rgba(20, 19, 32, 0.55);
+  --surface-2: rgba(255, 255, 255, 0.045);
+  --glass: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.062) 0%,
+    rgba(255, 255, 255, 0.022) 42%,
+    rgba(255, 255, 255, 0.012) 100%
+  );
+  --border: rgba(255, 255, 255, 0.085);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --text: #e9e7f6;
+  --text-dim: #9b97ba;
+  --text-faint: #6d698c;
+
+  /* 主色：低饱和紫 → 靛，青色只做点缀；橙色退到"风险提示"一个用途 */
+  --accent: #8b7cf6;
+  --accent-2: #6366f1;
+  --accent-3: #22d3ee;
+  --accent-dim: rgba(139, 124, 246, 0.14);
+  --glow: rgba(139, 124, 246, 0.45);
+
+  --done: #5eead4;
+  --pending: #7dd3fc;
+  --danger: #fb7185;
+  --warn: #f59e0b;
+
+  /* AI 伙伴的身体色（不随档位变化，只有光晕变） */
+  --ip-a: #17323b;
+  --ip-b: #08141b;
+  --ip-c: #03080c;
+  --ip-edge: rgba(125, 249, 240, 0.22);
+  --fur-glow: rgba(139, 124, 246, 0.36);
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
 
   color-scheme: dark;
-  font-family: system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  font-size: 15px;
+  font-family: 'Inter', system-ui, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 浅色主题：同一套变量名，只换取值。组件里不得出现任何硬编码颜色。 */
+/* 浅色主题：同一套变量名，只换取值。组件里不得出现任何硬编码颜色。
+   浅色版走"淡紫灰玻璃"，不是纯白——纯白会把紫色光晕全部吃掉。 */
 :root[data-theme='light'] {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #eef0f4;
-  --border: #d9dde5;
-  --text: #22242a;
-  --text-dim: #6b7180;
-  --accent: #6a61d8;
-  --accent-dim: rgba(106, 97, 216, 0.12);
-  --done: #27916b;
-  --pending: #3d7dc4;
-  --danger: #c9484c;
-  --warn: #b47100;
+  --bg: #f2f0f9;
+  --surface: rgba(255, 255, 255, 0.66);
+  --surface-2: rgba(92, 78, 158, 0.06);
+  --glass: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.62) 100%);
+  --border: rgba(60, 48, 110, 0.12);
+  --border-strong: rgba(60, 48, 110, 0.22);
+
+  --text: #1e1b2e;
+  --text-dim: #615b81;
+  --text-faint: #8b86a6;
+
+  --accent: #6d5ce7;
+  --accent-2: #4f46e5;
+  --accent-3: #0e9aa7;
+  --accent-dim: rgba(109, 92, 231, 0.12);
+  --glow: rgba(109, 92, 231, 0.28);
+
+  --done: #0f9c86;
+  --pending: #2c7bc4;
+  --danger: #d1455f;
+  --warn: #b26a00;
+
+  --ip-edge: rgba(30, 110, 130, 0.35);
+  --fur-glow: rgba(109, 92, 231, 0.2);
 
   color-scheme: light;
 }
@@ -45,18 +90,361 @@
 body {
   margin: 0;
   background: var(--bg);
+  /* 三团径向光：顶部偏中的紫、右上的青、左下的靛。
+     它们让"黑"变成有深度的空间，而不是一块死板的纯色 ——
+     深色界面"高级"和"廉价"的区别，八成在这层光上。
+     纯 CSS，无图片资源。 */
+  background-image:
+    radial-gradient(1150px 720px at 50% -14%, rgba(124, 91, 255, 0.34), transparent 62%),
+    radial-gradient(820px 620px at 96% 6%, rgba(34, 211, 238, 0.10), transparent 58%),
+    radial-gradient(900px 700px at 4% 96%, rgba(99, 102, 241, 0.18), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+:root[data-theme='light'] body {
+  background-image:
+    radial-gradient(1100px 700px at 50% -12%, rgba(124, 91, 255, 0.16), transparent 62%),
+    radial-gradient(820px 620px at 96% 4%, rgba(34, 211, 238, 0.08), transparent 58%);
 }
 
 #root {
-  max-width: 900px;
+  max-width: 1560px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding: 22px 40px 28px;
 }
 
-h1 {
-  font-size: 22px;
-  font-weight: 500;
+/* ---- 双栏骨架 ----
+   左：日程台账（可伸缩）　右：执行教练舞台（固定 468px）
+   右栏固定而非百分比：卡片里的建议条目需要稳定的行长，
+   宽度抖动会让"挪时间 · 标题 · 时间 · 采用"这一行反复换行。
+
+   stage 吃掉 header 与 footer 之间的全部剩余高度，并把两栏垂直居中：
+   1080p 全屏下如果内容只顶在上半屏、下半屏一片黑，看起来就是"没做完"；
+   居中之后同样的内容会变成"留白"，这是两种完全不同的观感。 */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 468px;
+  gap: 24px;
+  align-items: stretch;
+  /* safe：内容装得下就垂直居中（空列表时不会顶在上半屏留一片黑），
+     装不下就退化成顶部对齐（决策卡片出现时不会把标题推到视口外）。 */
+  align-content: safe center;
+  flex: 1;
+  padding: 8px 0;
+}
+
+/* 没有决策卡片时（空镜、宠物六档两章），让舞台自己长到与左栏等高：
+   否则右栏只有 330px，跟 790px 的日程列表并排会显得右半边"没做完"。
+   有卡片时这条不生效，高度由内容决定。 */
+.col-side > .pet-stage:only-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.col-side > .pet-stage:only-child .pet-figure {
+  flex: 1;
+  align-items: center;
+  min-height: 0;
+}
+
+/* 等待新一轮决策时上一轮的卡片不再渲染（见 App.tsx），
+   宠物会恢复成大尺寸并带上思考环 —— "猫抬起头开始想"这个转场
+   比让一张半透明的旧卡片杵在那里清楚得多。 */
+
+.col-main {
+  min-width: 0;
+}
+
+.col-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* 跟随滚动：日程列表很长时，舞台仍然在视野内 */
+  position: sticky;
+  top: 20px;
+}
+
+@media (max-width: 1180px) {
+  #root {
+    padding: 20px 18px 32px;
+  }
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .col-side {
+    position: static;
+  }
+}
+
+/* 右栏是 flex + gap 布局，子元素自带的纵向外边距会与 gap 叠加成双重间距 */
+.col-side > * {
+  margin-bottom: 0;
+}
+
+/* ---- 左栏分区标题 ----
+   小号 + 大字距 + 暗色：分区标题不该跟日程标题抢层级。
+   前面一道渐变短线代替图标，成本为零但版式立刻"有设计"。 */
+.col-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 30px 0 14px;
+}
+
+.col-head::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.col-head h2 {
   margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.col-head-count {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 今日时间轴 ----
+   日程列表回答"有哪些事"，这根轴回答"排得下吗"。
+   位置全部由 start_at / end_at 与 08:00–23:00 窗口算出，纯前端派生。 */
+.day-axis {
+  position: relative;
+  margin-top: 20px;
+  padding: 16px 20px 14px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 34px -26px rgba(0, 0, 0, 0.9);
+}
+
+.day-axis-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.day-axis-head h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.day-axis-range {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-axis-track {
+  position: relative;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+
+.day-axis-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.day-axis-bar {
+  position: absolute;
+  height: 11px;
+  border-radius: 4px;
+  background: var(--accent);
+  transition: left 0.35s ease, width 0.35s ease;
+}
+
+/* 时间轴上的色条跟优先级胶囊同一套色序：紫 → 靛 → 青 */
+.day-axis-bar.pri-1 {
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  box-shadow: 0 0 16px -6px rgba(139, 92, 246, 0.9);
+}
+.day-axis-bar.pri-2 {
+  background: linear-gradient(90deg, #6366f1, #3b82f6);
+  box-shadow: 0 0 16px -6px rgba(99, 102, 241, 0.8);
+}
+.day-axis-bar.pri-3 {
+  background: linear-gradient(90deg, #22d3ee, #2dd4bf);
+  box-shadow: 0 0 16px -6px rgba(34, 211, 238, 0.7);
+}
+.day-axis-bar.pri-4 {
+  background: #4f6b8f;
+}
+.day-axis-bar.pri-5 {
+  background: var(--text-faint);
+}
+
+.day-axis-bar.is-done {
+  opacity: 0.35;
+  background: var(--done);
+  box-shadow: none;
+}
+
+.day-axis-now {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+.day-axis-now i {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.day-axis-scale {
+  position: relative;
+  height: 16px;
+  margin-top: 6px;
+}
+
+.day-axis-scale span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text-faint);
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.day-axis-empty {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---- 浅色主题：把"玻璃上的黑底凹槽"换成白底，否则深底 + 深字会读不出来 ---- */
+:root[data-theme='light'] .pet-stats > div {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+:root[data-theme='light'] .btn,
+:root[data-theme='light'] .chip,
+:root[data-theme='light'] .suggestion-list li,
+:root[data-theme='light'] .intervention-line {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+:root[data-theme='light'] .day-axis-track {
+  background: rgba(92, 78, 158, 0.06);
+  border-color: rgba(60, 48, 110, 0.1);
+}
+
+:root[data-theme='light'] .day-axis-tick {
+  background: rgba(60, 48, 110, 0.1);
+}
+
+:root[data-theme='light'] .record::before,
+:root[data-theme='light'] .compose::before {
+  background: linear-gradient(90deg, transparent, rgba(60, 48, 110, 0.14), transparent);
+}
+
+:root[data-theme='light'] .pet-energy {
+  background: rgba(92, 78, 158, 0.12);
+}
+
+/* ---- 页脚 ---- */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 66px);
+}
+
+.app-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+.foot-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foot-item.dim {
+  opacity: 0.6;
+}
+
+.foot-grow {
+  flex: 1;
+}
+
+.foot-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+
+.foot-live {
+  background: var(--done);
+  box-shadow: 0 0 8px var(--done);
+}
+
+.foot-polling {
+  background: var(--warn);
+}
+
+
+h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.015em;
+  /* 顶亮底暗的金属质感字：比纯白多一层，但不像渐变标题那样花 */
+  background: linear-gradient(180deg, #ffffff 0%, #b9b2e4 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:root[data-theme='light'] h1 {
+  background: linear-gradient(180deg, #241f3d 0%, #4a4270 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .app-header {
@@ -64,7 +452,8 @@ h1 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
+  padding-bottom: 16px;
 }
 
 .header-actions {
@@ -78,18 +467,20 @@ h1 {
    否则 SSE 悄悄降级成轮询时，用户只会觉得"好像不太跟手"。 */
 .conn {
   font-size: 11px;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text-dim);
   cursor: default;
   white-space: nowrap;
+  letter-spacing: 0.04em;
 }
 
 .conn-live {
   color: var(--done);
-  border-color: var(--done);
+  border-color: rgba(94, 234, 212, 0.35);
+  box-shadow: 0 0 20px -8px var(--done);
 }
 
 .conn-polling {
@@ -98,19 +489,21 @@ h1 {
 }
 
 .subtitle {
-  margin: 4px 0 0;
-  color: var(--text-dim);
-  font-size: 13px;
+  margin: 8px 0 0;
+  color: var(--text-faint);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
 }
 
 .banner-error {
-  background: rgba(240, 149, 149, 0.12);
-  border: 1px solid var(--danger);
-  color: var(--danger);
-  border-radius: 8px;
-  padding: 10px 14px;
+  background: linear-gradient(180deg, rgba(251, 113, 133, 0.16), rgba(251, 113, 133, 0.06));
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  color: #fda4af;
+  border-radius: var(--r-md);
+  padding: 11px 15px;
   margin-bottom: 16px;
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 
 .banner-hint {
@@ -135,54 +528,418 @@ h1 {
   flex-basis: 100%;
 }
 
-/* ---- 宠物面板（P3-a ASCII 占位，P3-c 换 SVG 时不改这里的布局） ---- */
-.pet-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
+/* ---- 宠物舞台 ----------------------------------------------------------
+   竖版玻璃卡：AI 伙伴悬浮在卡片中央，背后一团淡紫圆形光环。
+   六档只改 --fur-mid（光晕色）与 --iris（眼睛色），身体色恒定 ——
+   同一个角色在不同情绪下的呼吸，而不是六个不同的卡通角色。 */
+.pet-stage {
+  --fur-mid: #8b7cf6;
+  --iris: #7df9f0;
+
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 78% at 50% -6%, rgba(139, 124, 246, 0.22), transparent 62%),
+    var(--glass);
+  border: 1px solid rgba(139, 124, 246, 0.22);
+  border-radius: var(--r-xl);
+  padding: 18px 22px 20px;
+  text-align: center;
+  backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-backdrop-filter: blur(26px) saturate(1.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 34px 80px -46px rgba(80, 60, 200, 0.75),
+    0 0 70px -40px var(--fur-glow);
 }
 
-.pet-face {
-  width: 84px;
-  height: 84px;
+.pet-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0 16% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 194, 255, 0.6), transparent);
+  pointer-events: none;
+}
+
+/* 六档光晕色：只换光，不换体色 */
+.pet-stage-great {
+  --fur-mid: #2dd4bf;
+  --iris: #6ee7d8;
+}
+.pet-stage-alert {
+  --fur-mid: #f59e0b;
+  --iris: #fcd34d;
+}
+.pet-stage-tired {
+  --fur-mid: #7c89a8;
+  --iris: #93a9c4;
+}
+.pet-stage-dormant {
+  --fur-mid: #6b7280;
+  --iris: #94a3b8;
+}
+.pet-stage-guilty {
+  --fur-mid: #fb7185;
+  --iris: #fda4af;
+}
+
+/* 光晕：从伙伴背后向外扩散的同色柔光，给舞台一点"聚光灯"感 */
+.pet-stage-halo {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  width: 360px;
+  height: 360px;
+  transform: translateX(-50%);
   border-radius: 50%;
-  background: var(--accent-dim);
-  border: 1px solid var(--border);
+  background: radial-gradient(circle, var(--fur-mid) 0%, transparent 62%);
+  opacity: 0.10;
+  pointer-events: none;
+  animation: halo-breathe 7s ease-in-out infinite;
+}
+
+@keyframes halo-breathe {
+  0%, 100% { opacity: 0.08; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.17; transform: translateX(-50%) scale(1.06); }
+}
+
+.pet-stage-top {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+}
+
+.pet-kicker {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.pet-debug {
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: #f0a020;
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.pet-figure {
+  position: relative;
+  display: flex;
   justify-content: center;
-  flex: none;
+  margin: 2px 0 4px;
 }
 
-.pet-face[data-mood='alert'] {
-  border-color: var(--warn);
+/* ---- 思考态 ----------------------------------------------------------
+   两圈反向旋转的虚线环 + 一道自上而下的扫描光。
+   它们只在等待模型返回时出现，是一段"没有内容的内容"的视觉填充。
+
+   颜色固定用主色紫，**不跟档位走**：等待是"正在想"，不是"出事了"。
+   之前沿用 --fur-mid，警觉档（琥珀）下整张卡会亮成警告色。 */
+.pet-stage.is-thinking {
+  border-color: rgba(160, 148, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(160, 148, 255, 0.45), 0 0 60px -14px var(--accent);
+  animation: think-pulse 1.8s ease-in-out infinite;
 }
-.pet-face[data-mood='tired'],
-.pet-face[data-mood='dormant'] {
-  border-color: var(--text-dim);
+
+@keyframes think-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(160, 148, 255, 0.35), 0 0 34px -14px var(--accent); }
+  50% { box-shadow: 0 0 0 1px rgba(200, 194, 255, 0.6), 0 0 64px -10px var(--accent); }
+}
+
+.think-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 208px;
+  height: 208px;
+  margin: -104px 0 0 -104px;
+  border-radius: 50%;
+  border: 1px dashed rgba(200, 194, 255, 0.55);
   opacity: 0.8;
-}
-.pet-face[data-mood='guilty'] {
-  border-color: var(--danger);
-}
-.pet-face[data-mood='great'] {
-  border-color: var(--done);
-  background: rgba(93, 202, 165, 0.14);
+  pointer-events: none;
+  box-shadow: 0 0 20px -10px var(--accent) inset;
 }
 
-/* ---- 六档猫的表情动画 ----
+.think-ring-a {
+  animation: ring-spin 7s linear infinite;
+}
+
+.think-ring-b {
+  width: 244px;
+  height: 244px;
+  margin: -122px 0 0 -122px;
+  border-style: dotted;
+  opacity: 0.4;
+  animation: ring-spin 11s linear infinite reverse;
+}
+
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 抖动是"警觉"的语言，不是"思考"的。等待模型时改成轻微上下浮动。 */
+.pet-stage.is-thinking .cat {
+  animation: think-bob 2.6s ease-in-out infinite !important;
+}
+
+@keyframes think-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.think-scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.think-scan::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 46%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14) 55%, transparent);
+  animation: think-scan-move 1.9s ease-in-out infinite;
+}
+
+@keyframes think-scan-move {
+  0% { transform: translateY(-130%); }
+  100% { transform: translateY(240%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .think-ring,
+  .think-scan::after,
+  .pet-stage.is-thinking {
+    animation: none !important;
+  }
+}
+
+/* 决策卡片紧跟在宠物卡后面时，两块合并成一体：
+   右上角是猫，下方是它给出的判断。分成两张卡会读成"两个模块"，
+   中间的 12px 缝隙还会把右栏割成两截，跟左栏比显得又碎又高。 */
+.pet-stage + .intervention {
+  margin-top: -12px;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+}
+
+.pet-stage + .intervention::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: -1px 0 12px;
+  background: linear-gradient(90deg, transparent, var(--border) 12%, var(--border) 88%, transparent);
+}
+
+.col-side .pet-stage:has(+ .intervention) {
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* ---- 决策卡片出现时，舞台收成"教练在场"的一条 ----
+   一屏里必须同时装下"伙伴 + 建议"才能拍：卡片本身就 500px 高，
+   宠物再占 570px 就必然要滚动，镜头里看不到完整的建议。
+   所以卡片出现时缩成一条存在感，而不是继续霸占舞台。 */
+.col-side:has(.intervention) .pet-stage {
+  padding: 10px 16px 12px;
+}
+
+.col-side:has(.intervention) .pet-figure {
+  margin: 0;
+}
+
+.col-side:has(.intervention) .pet-stage-halo {
+  top: -110px;
+}
+
+.col-side:has(.intervention) .pet-figure svg.cat {
+  width: 104px;
+  height: 104px;
+}
+
+.col-side:has(.intervention) .pet-line,
+.col-side:has(.intervention) .pet-meter,
+.col-side:has(.intervention) .pet-reason,
+.col-side:has(.intervention) .pet-energy-cap {
+  display: none;
+}
+
+.col-side:has(.intervention) .pet-mood-name {
+  font-size: 16px;
+  margin-top: 0;
+}
+
+.col-side:has(.intervention) .pet-mood-desc {
+  font-size: 11px;
+}
+
+.col-side:has(.intervention) .pet-energy {
+  margin-top: 6px;
+}
+
+.col-side:has(.intervention) .pet-stats {
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 8px;
+}
+
+.col-side:has(.intervention) .pet-stats > div {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding: 4px 9px;
+}
+
+.col-side:has(.intervention) .pet-stats dd {
+  font-size: 13px;
+}
+
+/* 情绪名：字距拉开、字重压轻 —— "精致"在排版上几乎等于"少一点重量、多一点间距"。
+   颜色不跟档位走（染色标题最容易显廉价），只有下面那颗状态点带色。 */
+.pet-mood-name {
+  position: relative;
+  margin: 6px 0 0;
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  color: var(--text);
+}
+
+.pet-mood-name::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  border-radius: 50%;
+  vertical-align: 6px;
+  background: var(--fur-mid);
+  box-shadow: 0 0 12px 2px var(--fur-glow);
+}
+
+.pet-mood-desc {
+  position: relative;
+  margin: 4px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+.pet-line {
+  position: relative;
+  margin: 16px 0 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  min-height: 46px;
+}
+
+.pet-energy {
+  position: relative;
+  height: 4px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pet-energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--fur-mid), var(--iris));
+  border-radius: 3px;
+  box-shadow: 0 0 14px var(--fur-glow);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pet-energy-cap {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+}
+
+.pet-energy-cap .num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.pet-reason {
+  position: relative;
+  margin-top: 14px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--text-faint);
+  opacity: 0.75;
+}
+
+/* ---- 六档 AI 伙伴的姿态与微动 ----
    每档一个能"一眼读懂"的动作，而不是单纯换张脸：
    alert 在抖（出事了要提醒你）、great 在跳（节奏在线）、
-   dormant 慢呼吸（好几天没动静）、tired 缓慢下沉（撑不住了）。 */
+   dormant 慢呼吸（好几天没动静）、tired 缓慢下沉（撑不住了）。
+
+   常驻微动（呼吸 / 眨眼 / 摆尾）与档位动画是叠加的：
+   前者写在内部元素上，后者写在外层 svg 上，互不覆盖。
+
+   外光晕用 drop-shadow 而不是 SVG 滤镜：它作用在整块 alpha 上，
+   头与身体的接缝处不会因此多出一道发光线。 */
 
 .cat {
   transition: transform 0.35s ease;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px var(--fur-glow)) drop-shadow(0 0 34px var(--fur-glow));
+}
+
+/* 光环：极慢的呼吸，只改不透明度，避免和身体动画打架 */
+.ip-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ip-halo-breathe 6.5s ease-in-out infinite;
+}
+
+@keyframes ip-halo-breathe {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+/* 轨道环：46 秒转一圈，慢到几乎察觉不到，但眼睛会觉得"它在运行" */
+.ip-orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring-spin 46s linear infinite;
+}
+
+/* 粒子：整体缓慢上浮 + 淡入淡出 */
+.ip-dust {
+  animation: ip-dust-drift 9s ease-in-out infinite;
+}
+
+@keyframes ip-dust-drift {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50% { opacity: 0.95; transform: translateY(-4px); }
+}
+
+/* 警觉档那颗琥珀点：慢闪，像设备上的告警灯 */
+.ip-alert-dot {
+  animation: ip-alert 1.6s ease-in-out infinite;
+}
+
+@keyframes ip-alert {
+  0%, 100% { opacity: 0.55; r: 4.2; }
+  50% { opacity: 1; r: 5.2; }
 }
 
 .cat-alert {
@@ -206,36 +963,69 @@ h1 {
 }
 
 .cat-normal {
-  animation: cat-breathe-slow 5s ease-in-out infinite;
+  animation: cat-breathe 3.4s ease-in-out infinite;
+}
+
+/* 眨眼：一眼一眨，两档错开，避免两只眼同时闭成"翻白眼" */
+.cat-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cat-blink 6.4s ease-in-out infinite;
+}
+.cat-eye:last-child {
+  animation-delay: 0.06s;
+}
+
+/* 摆尾：以尾根为轴，缓慢来回 */
+.cat-tail {
+  transform-box: view-box;
+  transform-origin: 148px 166px;
+  animation: cat-tail-swing 2.8s ease-in-out infinite;
+}
+
+@keyframes cat-blink {
+  0%, 91%, 100% { transform: scaleY(1); }
+  93.5% { transform: scaleY(0.08); }
+  95.5% { transform: scaleY(1); }
+}
+
+@keyframes cat-tail-swing {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-9deg); }
+}
+
+@keyframes cat-breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.022); }
 }
 
 @keyframes cat-shake {
   0%, 100% { transform: translateX(0) rotate(0deg); }
-  20% { transform: translateX(-2px) rotate(-3deg); }
-  40% { transform: translateX(2px) rotate(3deg); }
-  60% { transform: translateX(-1.5px) rotate(-2deg); }
-  80% { transform: translateX(1.5px) rotate(2deg); }
+  20% { transform: translateX(-3px) rotate(-2deg); }
+  40% { transform: translateX(3px) rotate(2deg); }
+  60% { transform: translateX(-2px) rotate(-1.4deg); }
+  80% { transform: translateX(2px) rotate(1.4deg); }
 }
 
 @keyframes cat-bounce {
   0%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-5px); }
+  30% { transform: translateY(-7px); }
   60% { transform: translateY(-1px); }
 }
 
 @keyframes cat-breathe-slow {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.045); opacity: 0.88; }
+  50% { transform: scale(1.035); opacity: 0.9; }
 }
 
 @keyframes cat-sag {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
+  50% { transform: translateY(3px); }
 }
 
 @keyframes cat-sway {
   0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-4deg); }
+  50% { transform: rotate(-3.5deg); }
 }
 
 .cat-zzz {
@@ -243,71 +1033,96 @@ h1 {
 }
 
 @keyframes cat-zzz-float {
-  0% { opacity: 0.2; transform: translate(0, 0) scale(0.8); }
-  50% { opacity: 0.9; transform: translate(3px, -5px) scale(1.1); }
-  100% { opacity: 0.2; transform: translate(6px, -10px) scale(0.8); }
+  0% { opacity: 0.15; transform: translate(0, 0); }
+  50% { opacity: 0.9; transform: translate(4px, -7px); }
+  100% { opacity: 0.15; transform: translate(9px, -14px); }
 }
 
-/* 用户开启了"减少动态效果"时不要抖个不停 ——  respect 系统设置 */
+/* 用户开启了"减少动态效果"时不要抖个不停 —— respect 系统设置 */
 @media (prefers-reduced-motion: reduce) {
   .cat,
-  .cat-zzz {
+  .cat-eye,
+  .cat-tail,
+  .cat-zzz,
+  .ip-halo,
+  .ip-orbit,
+  .ip-dust,
+  .ip-alert-dot,
+  .pet-stage-halo {
     animation: none !important;
   }
 }
 
-.pet-meta {
-  flex: 1;
-  min-width: 0;
+/* 浅色主题：光晕压淡一档，否则紫色光在浅底上会脏成一片 */
+:root[data-theme='light'] .pet-stage {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.6));
+  border-color: rgba(109, 92, 231, 0.22);
+}
+:root[data-theme='light'] .pet-stage-great {
+  --fur-mid: #0f9c86;
+  --iris: #14b8a6;
+}
+:root[data-theme='light'] .pet-stage-alert {
+  --fur-mid: #b26a00;
+  --iris: #d97706;
+}
+:root[data-theme='light'] .pet-stage-tired {
+  --fur-mid: #64748b;
+  --iris: #7c8aa0;
+}
+:root[data-theme='light'] .pet-stage-dormant {
+  --fur-mid: #64748b;
+  --iris: #8b98ab;
+}
+:root[data-theme='light'] .pet-stage-guilty {
+  --fur-mid: #d1455f;
+  --iris: #e11d48;
 }
 
-.pet-mood {
-  font-size: 13px;
-  font-weight: 500;
+/* ---- 六档刻度尺：把"系统只在这六档里判定"这件事画出来 ---- */
+.pet-meter {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin: 18px 0 18px;
 }
 
-.pet-energy {
-  height: 6px;
-  background: var(--surface-2);
+.pet-meter-tick {
+  width: 26px;
+  height: 4px;
   border-radius: 3px;
-  margin: 6px 0;
+  background: var(--text-faint);
+  opacity: 0.3;
+  transition: background 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
+}
+
+.pet-meter-tick.is-on {
+  background: var(--fur-mid);
+  opacity: 1;
+  transform: scaleY(2);
+  box-shadow: 0 0 16px 1px var(--fur-glow);
+}
+
+/* ---- 四项信号：2×2 网格，比横排四个数字更稳 ---- */
+.pet-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  margin: 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
-.pet-energy-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.pet-line {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.pet-reason {
-  font-size: 11px;
-  color: var(--text-dim);
-  opacity: 0.7;
-  margin-top: 2px;
-}
-
-.pet-ascii {
-  font-size: 12px;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-
-.pet-stats {
-  display: flex;
-  gap: 18px;
-  margin: 0;
-  flex: none;
-}
-
 .pet-stats > div {
-  text-align: right;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 13px;
+  background: rgba(8, 8, 14, 0.35);
 }
 
 .pet-stats dt {
@@ -316,8 +1131,8 @@ h1 {
 }
 
 .pet-stats dd {
-  margin: 2px 0 0;
-  font-size: 18px;
+  margin: 0;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -329,21 +1144,24 @@ h1 {
   color: var(--done);
 }
 
-/* ---- 冲突 ---- */
+/* ---- 冲突 ----
+   橙色在这套界面里只有一个用途：风险。所以它只出现在这里，别处一律紫/青。 */
 .banner-warn {
-  background: rgba(239, 159, 39, 0.12);
-  border: 1px solid var(--warn);
-  color: var(--warn);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  font-size: 13px;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06));
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  border-radius: var(--r-md);
+  padding: 9px 14px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  box-shadow: 0 0 30px -20px var(--warn);
 }
 
 .conflict-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   margin-bottom: 18px;
 }
 
@@ -352,12 +1170,14 @@ h1 {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  background: var(--surface);
+  background: var(--glass);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 12px;
+  border-left: 2px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 7px 13px;
+  font-size: 11.5px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .conflict.is-hard {
@@ -365,44 +1185,90 @@ h1 {
 }
 
 .conflict.is-soft {
-  border-left-color: var(--text-dim);
+  border-left-color: var(--text-faint);
 }
 
 .conflict-detail {
-  color: var(--text-dim);
+  color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
 
 .conflict-ids {
-  color: var(--text);
-  opacity: 0.85;
+  color: var(--text-dim);
 }
 
-/* ---- 表单 / 控件 ---- */
+/* ---- 录入控制台 ----
+   一句话解析 + 手动表单合成一张玻璃卡。两张裸控件直接铺在背景上时，
+   左栏顶部没有"块"的感觉，整页看着像还没排版。 */
+.compose {
+  position: relative;
+  padding: 16px 18px 18px;
+  border-radius: 22px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 24px 50px -38px rgba(0, 0, 0, 0.95);
+}
+
+.compose::before {
+  content: '';
+  position: absolute;
+  inset: 0 18% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196, 188, 255, 0.45), transparent);
+  pointer-events: none;
+}
+
+.compose .quick-add {
+  margin: 0;
+}
+
+.compose .record-form {
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---- 表单 / 控件 ----
+   输入框是"玻璃上的凹槽"：底色比卡片略深、内阴影压暗、聚焦时只亮一圈紫光。
+   不要给它们加粗边框 —— 一行四个控件都镶黑框，就回到表格感。 */
 .record-form {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  /* 带标签的字段比裸输入框高，底部对齐才能让标题框和它们齐平 */
   align-items: flex-end;
 }
 
 input,
 select {
-  background: var(--surface);
+  background: rgba(9, 9, 16, 0.55);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
   color: var(--text);
   font-size: 14px;
   font-family: inherit;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+:root[data-theme='light'] input,
+:root[data-theme='light'] select {
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 2px rgba(60, 48, 110, 0.08);
+}
+
+input::placeholder {
+  color: var(--text-faint);
 }
 
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: rgba(139, 124, 246, 0.55);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(139, 124, 246, 0.14);
 }
 
 .record-form input:not([type='datetime-local']) {
@@ -414,84 +1280,122 @@ select:focus {
 .rf-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-dim);
+  gap: 5px;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
 }
 
+/* 按钮默认是"安静的玻璃片"，只有主操作才发光 */
 .btn {
-  background: var(--surface-2);
+  background: rgba(255, 255, 255, 0.045);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  color: var(--text-dim);
+  padding: 9px 15px;
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease,
+    box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .btn:hover:not(:disabled) {
-  border-color: var(--accent);
+  color: var(--text);
+  border-color: rgba(139, 124, 246, 0.4);
+  background: rgba(139, 124, 246, 0.1);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: default;
 }
 
 .btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: linear-gradient(135deg, #8b7cf6, #6366f1);
+  border-color: transparent;
   color: #fff;
+  box-shadow: 0 0 24px -10px var(--accent), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .btn.primary:hover:not(:disabled) {
-  opacity: 0.9;
+  box-shadow: 0 0 30px -8px var(--accent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
 .btn.small {
-  padding: 4px 10px;
+  padding: 5px 11px;
   font-size: 12px;
+  border-radius: 9px;
 }
 
 .btn.danger:hover:not(:disabled) {
-  border-color: var(--danger);
+  border-color: rgba(251, 113, 133, 0.5);
   color: var(--danger);
+  background: rgba(251, 113, 133, 0.1);
 }
 
-/* ---- 列表 ---- */
+/* ---- 列表 ----
+   每条记录是一块独立玻璃：圆角 16、上沿一道高光、悬停时紫光微亮。
+   时间用等宽数字，标题与时间的层级靠字号和颜色拉开，而不是靠加粗。 */
 .record-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .record {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  background: var(--surface);
+  gap: 14px;
+  background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
+  border-radius: var(--r-lg);
+  padding: 15px 20px;
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 34px -26px rgba(0, 0, 0, 0.9);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* 上沿柔和高光：一条中间亮、两端透明的 1px 线 */
+.record::before {
+  content: '';
+  position: absolute;
+  inset: 0 12% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196, 188, 255, 0.5), transparent);
+  pointer-events: none;
+}
+
+.record:hover {
+  border-color: rgba(139, 124, 246, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 40px -26px rgba(0, 0, 0, 0.9),
+    0 0 30px -18px var(--accent);
 }
 
 .record.status-done {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .record.has-conflict {
-  border-color: var(--warn);
+  border-color: rgba(245, 158, 11, 0.45);
 }
 
 .record.is-editing {
   flex-direction: column;
   align-items: stretch;
-  border-color: var(--accent);
+  border-color: rgba(139, 124, 246, 0.5);
+  background: rgba(139, 124, 246, 0.06);
 }
 
 .edit-grid {
@@ -516,16 +1420,21 @@ select:focus {
 .record-main {
   display: flex;
   flex-direction: column;
+  gap: 3px;
   min-width: 0;
 }
 
 .record-title {
-  font-size: 15px;
+  font-size: 15.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .record-time {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .record-side {
@@ -535,46 +1444,105 @@ select:focus {
   flex: none;
 }
 
+/* 编辑 / 删除 平时隐身，悬停那行才出现：
+   一行 8 个药丸按钮是"后台表格"的直接来源。完成是主操作，始终可见。 */
+.record-side .btn.edit-btn,
+.record-side .btn.del-btn {
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, color 0.18s ease,
+    border-color 0.18s ease, background 0.18s ease;
+}
+
+.record:hover .record-side .btn.edit-btn,
+.record:hover .record-side .btn.del-btn,
+.record-side .btn.edit-btn:focus-visible,
+.record-side .btn.del-btn:focus-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 .badge {
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
-  background: var(--surface-2);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-dim);
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .badge-pending {
   color: var(--pending);
-  border-color: var(--pending);
+  border-color: rgba(125, 211, 252, 0.3);
+  background: rgba(125, 211, 252, 0.07);
 }
 .badge-done {
   color: var(--done);
-  border-color: var(--done);
+  border-color: rgba(94, 234, 212, 0.3);
+  background: rgba(94, 234, 212, 0.07);
 }
 .badge-dropped {
   color: var(--danger);
-  border-color: var(--danger);
+  border-color: rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.07);
 }
 .badge-in_progress {
   color: var(--accent);
-  border-color: var(--accent);
+  border-color: rgba(139, 124, 246, 0.35);
+  background: rgba(139, 124, 246, 0.1);
+}
+
+/* 优先级胶囊：紫 → 靛 → 青的渐变序列，颜色本身就是排序。
+   橙色只留给"冲突"这类风险，所以 P1 不再是橙色。 */
+.badge.pri {
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 18px -8px rgba(139, 124, 246, 0.9);
+}
+.badge.pri[data-p='1'] {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+.badge.pri[data-p='2'] {
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  box-shadow: 0 0 18px -8px rgba(99, 102, 241, 0.9);
+}
+.badge.pri[data-p='3'] {
+  background: linear-gradient(135deg, #22d3ee, #2dd4bf);
+  color: #062028;
+  box-shadow: 0 0 18px -8px rgba(34, 211, 238, 0.8);
+}
+.badge.pri[data-p='4'],
+.badge.pri[data-p='5'] {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-faint);
+  box-shadow: none;
 }
 
 .badge-hard {
   color: var(--warn);
-  border-color: var(--warn);
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.1);
 }
 
 .badge-soft {
   color: var(--text-dim);
 }
 
+.badge.tag {
+  color: var(--text-faint);
+  background: transparent;
+}
+
 .empty {
-  color: var(--text-dim);
+  color: var(--text-faint);
   font-size: 13px;
   text-align: center;
-  padding: 32px 0;
+  padding: 40px 0;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-lg);
 }
 
 /* ==================================================================
@@ -599,29 +1567,33 @@ select:focus {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .qa-chips-label {
-  font-size: 11px;
-  color: var(--text-dim);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--text-faint);
   margin-right: 2px;
+  white-space: nowrap;
 }
 
 .chip {
+  font-family: inherit;
   font-size: 11px;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-faint);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
 
 .chip:hover {
-  border-color: var(--accent);
+  border-color: rgba(139, 124, 246, 0.45);
   color: var(--text);
+  background: rgba(139, 124, 246, 0.1);
 }
 
 /* 推断项必须一眼看出来是"系统猜的" —— 这是不替用户做决定的可视化保证 */
@@ -632,16 +1604,19 @@ select:focus {
 }
 
 .qa-card {
-  margin-top: 12px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-2);
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(139, 124, 246, 0.25);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(139, 124, 246, 0.09), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 20px 40px -30px rgba(0, 0, 0, 0.9);
 }
 
 .qa-card-error {
-  border-color: var(--danger);
-  background: rgba(224, 108, 108, 0.08);
+  border-color: rgba(251, 113, 133, 0.45);
+  background: rgba(251, 113, 133, 0.08);
 }
 
 .qa-card-head {
@@ -748,20 +1723,30 @@ select:focus {
    卡片上最显眼的是"这条建议是谁给的"。降级方案不该伪装成模型输出，
    所以在视觉上就把三种来源区隔开，而不是只在调试面板里写一行字。 */
 .intervention {
-  margin: 16px 0;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 10px;
-  background: var(--surface);
+  position: relative;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(139, 124, 246, 0.28);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(139, 124, 246, 0.10), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 50px -34px rgba(0, 0, 0, 0.95),
+    0 0 40px -26px var(--accent);
 }
 
 .intervention[data-source='fallback'] {
   border-left-color: var(--warn);
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.09), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 50px -34px rgba(0, 0, 0, 0.95);
 }
 
 .intervention[data-source='cache'] {
-  border-left-color: var(--text-dim);
+  border-left-color: var(--text-faint);
+  border-color: var(--border);
+  background: var(--glass);
 }
 
 .intervention-head {
@@ -772,69 +1757,102 @@ select:focus {
 
 .intervention-head h2 {
   flex: 1;
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 500;
+  letter-spacing: 0.02em;
   margin: 0;
 }
 
 .src {
   flex: none;
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 10.5px;
+  padding: 3px 9px;
   border-radius: 999px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid rgba(139, 124, 246, 0.5);
+  color: #c4bcff;
   background: var(--accent-dim);
   cursor: help;
+  letter-spacing: 0.04em;
 }
 
 .src-fallback {
-  border-color: var(--warn);
-  color: var(--warn);
-  background: rgba(239, 159, 39, 0.1);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
 }
 
 .src-cache {
-  border-color: var(--text-dim);
+  border-color: var(--border-strong);
   color: var(--text-dim);
   background: var(--surface-2);
 }
 
 .intervention-msg {
   margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.65;
   color: var(--text);
 }
 
 .intervention-line {
   margin: 10px 0 0;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--surface-2);
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.045);
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 
 .cat-tag {
   display: inline-block;
   margin-right: 8px;
-  font-size: 11px;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
   color: var(--accent);
 }
 
 .suggestion-list {
   list-style: none;
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .suggestion-list li {
-  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'main  action'
+    'why   action';
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 3px;
+  padding: 8px 11px;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-2);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.035);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.suggestion-list li:hover {
+  border-color: rgba(139, 124, 246, 0.32);
+  background: rgba(139, 124, 246, 0.06);
+}
+
+.suggestion-list li .suggestion-main {
+  grid-area: main;
+}
+
+.suggestion-list li .rationale {
+  grid-area: why;
+}
+
+.suggestion-list li > .btn {
+  grid-area: action;
+  align-self: center;
 }
 
 .suggestion-main {
@@ -858,8 +1876,9 @@ select:focus {
 }
 
 .rationale {
-  margin: 6px 0 8px;
-  font-size: 12px;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
   color: var(--text-dim);
 }
 
@@ -868,7 +1887,7 @@ select:focus {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 8px;
   font-size: 11px;
   color: var(--text-dim);
 }
@@ -894,7 +1913,7 @@ select:focus {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 10px;
   padding-top: 12px;
   border-top: 1px dashed var(--border);
 }
@@ -929,11 +1948,14 @@ select:focus {
 
 /* 闸门拦下干预时的说明。它不是错误 —— 用中性色，别吓到人。 */
 .banner-info {
-  background: var(--surface-2);
+  background: var(--glass);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: var(--r-md);
+  padding: 11px 15px;
   margin-bottom: 16px;
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
