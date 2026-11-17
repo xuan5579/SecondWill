@@ -33,3 +33,14 @@ dist/
 
 # 本地临时产物（走查截图、日志、录制中间文件）
 .tmp/
+
+# 录制素材与内部调试工具（含旁白稿，属私人内容，不进仓库）
+docs/15-拍摄支撑手册.md
+docs/16-素材清单与交接.md
+docs/17-旁白稿与配音说明.md
+docs/18-旁白稿-当前版本.md
+scripts/seed_test.py
+scripts/seed_video.py
+scripts/watch_log.py
+scripts/show_prompt.py
+scripts/demo_bad_id.py
