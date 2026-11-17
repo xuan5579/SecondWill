@@ -11,8 +11,10 @@ interface Props {
   records: RecordItem[]
 }
 
+/** 冲突项里的日程名。查不到时给一句人话，绝不回落到裸 id ——
+ *  `rec_5f011b49...` 这种串在界面上和乱码没有区别，既读不懂也说明不了问题。 */
 function titleOf(records: RecordItem[], id: string): string {
-  return records.find((r) => r.id === id)?.title ?? id
+  return records.find((r) => r.id === id)?.title ?? '（已删除的日程）'
 }
 
 export default function ConflictList({ conflicts, records }: Props) {

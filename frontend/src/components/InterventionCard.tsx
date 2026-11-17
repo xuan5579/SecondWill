@@ -22,6 +22,14 @@ const KIND_LABEL: Record<string, string> = {
   drop: '取消',
 }
 
+/** 宠物台词那一行的标签文案。
+ *
+ * 这句话本身不能删 —— 它是"冷建议"与"情绪层"之间的桥，宠物的性格全靠它。
+ * 但标签必须正式：这张卡片顶部写的是「模型建议」，属于决策产物，
+ * 标签若用「猫说」这种口吻，专业读者第一眼会把它当成玩具功能，而不是系统输出。
+ */
+const PET_LINE_TAG = '教练附言'
+
 /** 三个反馈按钮的文案刻意不用"好的/稍后/关闭"这类中性词。
  *
  * 「不再提醒这类」必须让用户看清它的分量：点够次数，这一整类建议就再也不会出现。
@@ -59,6 +67,11 @@ export default function InterventionCard({
 }: Props) {
   const [ack, setAck] = useState<FeedbackAck | null>(null)
   const [busy, setBusy] = useState(false)
+  /* 采纳过的建议要把按钮锁成「已采用」。
+     否则用户点完「采用」，时间已经改了，按钮却还是可点的「采用」——
+     录制时看不出"这一步成功了"，手快还会连点两次（第二次会基于旧建议再改一遍）。
+     按 record_id 记而不是布尔量：一条决策里可能有多条建议，各锁各的。 */
+  const [appliedId, setAppliedId] = useState<string | null>(null)
 
   if (!decision) return null
 
@@ -78,7 +91,11 @@ export default function InterventionCard({
     text: decision.source,
     hint: '',
   }
-  const titleOf = (id: string) => records.find((r) => r.id === id)?.title ?? id
+  // 建议里的 target_record_id 是**历史决策**里记下的 id。卡片刷新后会重放旧决策，
+  // 而对应的日程可能已被删除、或整库被重新灌过数据 —— 此时查不到标题。
+  // 绝不能把裸 id 当标题显示（那在界面上就是一串乱码），要显式说明"它不在了"，
+  // 并锁住"采用"：对不存在的日程发 PATCH 只会换来 404，让用户以为点坏了。
+  const findRecord = (id: string) => records.find((r) => r.id === id)
 
   const send = async (kind: FeedbackKind) => {
     if (!decision.intervention_id || busy) return
@@ -119,35 +136,65 @@ export default function InterventionCard({
 
       {iv.pet_line && (
         <p className="intervention-line">
-          <span className="cat-tag">猫说</span>
+          <span className="cat-tag">{PET_LINE_TAG}</span>
           {iv.pet_line}
         </p>
       )}
 
       {payload.suggestions.length > 0 && (
         <ul className="suggestion-list">
-          {payload.suggestions.map((s) => (
-            <li key={s.id || s.target_record_id}>
-              <div className="suggestion-main">
-                <span className="kind">{KIND_LABEL[s.kind] ?? s.kind}</span>
-                <strong>{titleOf(s.target_record_id)}</strong>
-                <span className="when">
-                  {fmt(s.proposed_start)} → {fmt(s.proposed_end)}
-                </span>
-              </div>
-              {s.rationale && <div className="rationale">{s.rationale}</div>}
-              {s.proposed_start && s.proposed_end && (
+          {payload.suggestions.map((s) => {
+            const target = findRecord(s.target_record_id)
+            /* 两种"用不了"必须分开说，因为原因不同：
+               1. 记录不在了 —— 建议来自一次历史决策，日程已被删除或整库重灌过；
+               2. 记录还在但已完成 —— 卡片落库后用户又勾掉了它，这是**录制时的常态**
+                  （实测：决策跑 9 秒，卡片出现时用户已经勾到第 4 条，它指着第 5 条）。
+               对已完成记录发 PATCH 会把 done 改成 pending 的时间调整，等于把做掉的事
+               又翻出来。两侧都锁住「采用」，并把原因写清楚。 */
+            const gone = !target
+            const finished = Boolean(
+              target && (target.status === 'done' || target.status === 'dropped'),
+            )
+            const canApply = Boolean(target && !finished && s.proposed_start && s.proposed_end)
+            const applied = appliedId === s.target_record_id
+            const why = gone
+              ? '这条建议指向的日程已不在列表里（可能被删除，或数据已重灌），无法采用'
+              : finished
+                ? '这条日程已经完成了，不需要再挪 —— 建议是基于它还没做时的状态给的'
+                : '按建议时间改写这条日程'
+            return (
+              <li key={s.id || s.target_record_id}>
+                <div className="suggestion-main">
+                  <span className="kind">{KIND_LABEL[s.kind] ?? s.kind}</span>
+                  {target ? (
+                    <strong className={finished ? 'target-missing' : undefined} title={finished ? why : undefined}>
+                      {target.title}
+                    </strong>
+                  ) : (
+                    <strong className="target-missing" title={why}>
+                      该日程已不存在
+                    </strong>
+                  )}
+                  {finished && <span className="badge badge-done">已完成</span>}
+                  <span className="when">
+                    {fmt(s.proposed_start)} → {fmt(s.proposed_end)}
+                  </span>
+                </div>
+                {s.rationale && <div className="rationale">{s.rationale}</div>}
                 <button
                   className="btn small"
-                  onClick={() =>
+                  disabled={!canApply || applied}
+                  title={applied ? '已按这条建议改过时间' : why}
+                  onClick={() => {
+                    setAppliedId(s.target_record_id)
                     applySuggestion(s.target_record_id, s.proposed_start!, s.proposed_end!)
-                  }
+                  }}
                 >
-                  采用
+                  {applied ? '已采用' : '采用'}
                 </button>
-              )}
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
 

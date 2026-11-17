@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { fromLocalInput, formatRange, toLocalInput } from '../lib/datetime'
 import type { RecordItem, RecordStatus } from '../types/api'
 
@@ -11,12 +11,20 @@ const STATUS_LABEL: Record<RecordStatus, string> = {
 
 const STATUS_KEYS: RecordStatus[] = ['pending', 'in_progress', 'done', 'dropped']
 
+/** 光流命中：由干预光流在抵达瞬间传入，900ms 后由 App 清除。
+ *  卡片只负责"亮起来"，不关心是谁、为什么点亮。 */
+export interface StreamHit {
+  id: string
+  color: string
+}
+
 interface Props {
   records: RecordItem[]
   conflictIds: Set<string>
   onUpdate: (id: string, draft: RecordDraft) => Promise<void>
   onComplete: (item: RecordItem) => Promise<void>
   onRemove: (id: string) => Promise<void>
+  hit?: StreamHit | null
 }
 
 export interface RecordDraft {
@@ -29,16 +37,21 @@ export interface RecordDraft {
 
 function Row({
   item,
+  index,
   isConflict,
   onUpdate,
   onComplete,
   onRemove,
+  hit,
 }: {
   item: RecordItem
+  /** 第几张卡 —— 只用来错开首屏进场，不参与任何业务判断 */
+  index: number
   isConflict: boolean
   onUpdate: Props['onUpdate']
   onComplete: Props['onComplete']
   onRemove: Props['onRemove']
+  hit?: StreamHit | null
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<RecordDraft>({
@@ -91,7 +104,7 @@ function Row({
 
   if (editing) {
     return (
-      <article className="record is-editing">
+      <article className="record is-editing" data-record-id={item.id}>
         <div className="edit-grid">
           <input
             autoFocus
@@ -148,12 +161,43 @@ function Row({
     )
   }
 
+  const hitNow = hit?.id === item.id
+
   return (
     <article
       key={item.id}
-      className={`record status-${item.status}${isConflict ? ' has-conflict' : ''}`}
+      data-record-id={item.id}
+      className={`record status-${item.status}${isConflict ? ' has-conflict' : ''}${
+        hitNow ? ' is-stream-hit' : ''
+      }`}
+      /* 进场错峰：第 n 张延后 n×55ms，封顶 8 档（440ms）——
+         列表再长也不让最后一张等太久，否则看着像加载慢。
+         只在首次挂载时生效（React 复用同一节点，状态变化不会重播），
+         所以勾选完成不会让整列重新"跳"一遍。 */
+      style={
+        {
+          animationDelay: `${Math.min(index, 8) * 55}ms`,
+          ...(hitNow ? { '--stream-color': hit.color } : {}),
+        } as CSSProperties
+      }
     >
-      <div className="record-main">
+      {/* 卡片正文本身就是"打开这条"的入口 —— 复用已有编辑态，不另起一层浮层。
+          右侧已经排了「编辑 / 完成 / 删除」三个按钮，再加一个弹出气泡就是两套入口，
+          还会跟光流命中、宠物气泡抢同一块空间。 */}
+      <div
+        className="record-main"
+        role="button"
+        tabIndex={0}
+        aria-label={`编辑：${item.title}`}
+        title="点击修改这条日程"
+        onClick={open}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            open()
+          }
+        }}
+      >
         <span className="record-title">{item.title}</span>
         <span className="record-time">{formatRange(item.start_at, item.end_at)}</span>
       </div>
@@ -190,7 +234,7 @@ function Row({
 }
 
 export default function RecordList(props: Props) {
-  const { records, conflictIds, onUpdate, onComplete, onRemove } = props
+  const { records, conflictIds, onUpdate, onComplete, onRemove, hit } = props
 
   if (records.length === 0) {
     return (
@@ -202,14 +246,16 @@ export default function RecordList(props: Props) {
 
   return (
     <section className="record-list">
-      {records.map((r) => (
+      {records.map((r, i) => (
         <Row
           key={r.id}
           item={r}
+          index={i}
           isConflict={conflictIds.has(r.id)}
           onUpdate={onUpdate}
           onComplete={onComplete}
           onRemove={onRemove}
+          hit={hit}
         />
       ))}
     </section>

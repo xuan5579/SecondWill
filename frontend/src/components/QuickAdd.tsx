@@ -119,7 +119,10 @@ export default function QuickAdd({ onCreate }: Props) {
               void parse(text)
             }
           }}
-          placeholder="一句话添加：明天下午3点到5点评审PR"
+          /* 占位例句必须落在 nl_spec 的《支持清单》内 —— 评委照着敲一遍，
+             要能一次解析成功。所以用「高优先级」而不用「P3」：
+             优先级关键词只认"高/中/低优先级"，P3 这种写法不在清单里。 */
+          placeholder="一句话添加：明天下午3点到5点评审PR 高优先级"
           aria-label="自然语言输入"
         />
         <button

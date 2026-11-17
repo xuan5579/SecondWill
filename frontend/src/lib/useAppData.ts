@@ -26,8 +26,16 @@ const POLL_MS = Number(import.meta.env.VITE_POLL_MS ?? 5000)
  */
 function normalizeDecision(raw: unknown): DecisionEnvelope {
   const d = (raw ?? {}) as Record<string, unknown>
-  // 已经是标准形状就原样放过（POST 响应走这条路）
-  if (d.payload) return d as unknown as DecisionEnvelope
+  /* /latest 恢复的历史决策：落库的 payload 就是完整 envelope（有顶层 payload），
+     所以走这条路 —— 但 envelope 是在**落库之前**生成的，里面没有 intervention_id；
+     接口把它放在外层的 `id` 里。不补回来的话，刷新后的卡片上「采用」还能用
+     （只走 recordId），三个反馈按钮却因 `!decision.intervention_id` 全被锁死，
+     点下去零请求、零提示，看起来像坏了。 */
+  if (d.payload) {
+    const env = d as unknown as DecisionEnvelope
+    if (!env.intervention_id && typeof d.id === 'string') env.intervention_id = d.id
+    return env
+  }
 
   const pick = <T,>(key: string, fallback: T): T =>
     (d[key] === undefined || d[key] === null ? fallback : d[key]) as T
@@ -46,7 +54,12 @@ function normalizeDecision(raw: unknown): DecisionEnvelope {
       intervention: pick<DecisionPayload['intervention']>('intervention', null),
       caveats: pick<string[]>('caveats', []),
     },
-    intervention_id: pick('intervention_id', null),
+    /* /latest 恢复的历史决策顶层只有 `id`（Intervention 主键），
+       没有 `intervention_id` —— 那是实时 envelope 的字段名。
+       不兜底的话，刷新后卡片的「采用」还能用（只走 recordId），
+       而三个反馈按钮会因为 `!decision.intervention_id` 全被锁死，
+       点下去零请求、零提示，看起来像坏了。 */
+    intervention_id: pick<string | null>('intervention_id', pick<string | null>('id', null)),
     delivered: d.delivered === false ? false : true,
     reason: pick<string | undefined>('reason', undefined),
     triggered: pick<boolean | undefined>('triggered', undefined),
@@ -74,12 +87,30 @@ function normalizeDecision(raw: unknown): DecisionEnvelope {
 export function useAppData() {
   const [records, setRecords] = useState<RecordItem[]>([])
   const [state, setState] = useState<AppState | null>(null)
+  /** state 的版本号：每成功拉到一次 /api/state 就 +1。
+   *
+   * 干预光流要靠它判断"这一次决策带来的新情绪已经落定了没有" ——
+   * 单看 mood 字符串无法区分"还没拉到"和"拉到了但档位没变"。 */
+  const [stateSeq, setStateSeq] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [channel, setChannel] = useState<ChannelMode>('connecting')
   // 干预卡片（P4）。单独存是因为它**不是** /api/state 的一部分：
   // 决策是异步到达的事件，而 state 是随时可重算的快照，两者生命周期不同。
   const [decision, setDecision] = useState<DecisionEnvelope | null>(null)
+
+  /** 只记"经 SSE 送达"的决策，并带一个单调序号。
+   *
+   * 为什么不能直接用 `decision` 判断：`loadLatestDecision()` 在刷新页面时
+   * 也会写 `decision`，如果拿它当动画触发器，每次 F5 都会重放一遍光流。
+   * 加这一路事件流之后，"新事件"与"回看历史"从源头就分开了 ——
+   * 也顺便成了光流去重的外层保险（同一条决策只会有一个序号）。
+   */
+  const [decisionEvent, setDecisionEvent] = useState<{
+    seq: number
+    decision: DecisionEnvelope
+  } | null>(null)
+  const eventSeq = useRef(0)
 
   // 轮询定时器；恢复 SSE 时要clear，这里用 ref 保存以便跨回调取消
   const pollTimer = useRef<number | null>(null)
@@ -89,6 +120,7 @@ export function useAppData() {
       const [list, appState] = await Promise.all([api.listRecords(), api.getState()])
       setRecords(list)
       setState(appState)
+      setStateSeq((s) => s + 1)
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -153,7 +185,11 @@ export function useAppData() {
     // 若这里也只推"变了"再让前端去拉，会出现"宠物已经回落但卡片还在说有冲突"的错位。
     es.addEventListener('decision', (ev) => {
       try {
-        setDecision(normalizeDecision(JSON.parse((ev as MessageEvent).data)))
+        const next = normalizeDecision(JSON.parse((ev as MessageEvent).data))
+        setDecision(next)
+        // 只有 SSE 事件才推进序号：干预光流据此判断"这是新送达的一条"
+        eventSeq.current += 1
+        setDecisionEvent({ seq: eventSeq.current, decision: next })
       } catch {
         void loadLatestDecision()
       }
@@ -175,10 +211,14 @@ export function useAppData() {
   return {
     records,
     state,
+    /** 每次 /api/state 成功刷新的版本号（光流用它等"新情绪落定"） */
+    stateSeq,
     error,
     loading,
     channel,
     decision,
+    /** SSE 送达的最新一条决策（带序号）；刷新时回看的历史决策不会出现在这里 */
+    decisionEvent,
     setDecision,
     setError,
     reload: load,

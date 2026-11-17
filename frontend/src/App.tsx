@@ -1,16 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ConflictList from './components/ConflictList'
 import DayTimeline from './components/DayTimeline'
 import InterventionCard from './components/InterventionCard'
+import InterventionStream from './components/InterventionStream'
 import PetPanel from './components/PetPanel'
 import QuickAdd from './components/QuickAdd'
 import RecordForm from './components/RecordForm'
-import RecordList, { type RecordDraft } from './components/RecordList'
+import RecordList, { type RecordDraft, type StreamHit } from './components/RecordList'
 import { exportCsvUrl } from './lib/api'
 import { api, type RecordInput } from './lib/api'
-import type { RecordItem } from './types/api'
+import type { PetPulseKind } from './lib/petPulse'
+import type { DecisionEnvelope, RecordItem } from './types/api'
 import { applyTheme, readTheme, type Theme } from './lib/theme'
 import { useAppData } from './lib/useAppData'
+import { useInterventionStream } from './lib/useInterventionStream'
+
+/** 拍摄/预览模式：`?stream=demo`。模块级求值一次，服务端渲染不存在（纯 Vite SPA）。 */
+const STREAM_DEMO =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('stream')
 
 /** 包一层统一的错误上报：任何写操作失败都走这里，避免每个回调重复 try/catch 的流程代码。 */
 function useActions(reload: () => Promise<void>, setError: (msg: string | null) => void) {
@@ -29,10 +36,12 @@ export default function App() {
   const {
     records,
     state,
+    stateSeq,
     error,
     loading,
     channel,
     decision,
+    decisionEvent,
     setDecision,
     setError,
     reload,
@@ -45,26 +54,148 @@ export default function App() {
   const [asking, setAsking] = useState(false)
   const run = useActions(reload, setError)
 
+  /* ---- 宠物脉冲（A1）：光核对用户操作的即时回应。
+   * 这是纯视觉层：脉冲先于请求结果发出 —— 用户按下的一瞬间就得到反馈；
+   * 若请求随后失败，error 横幅自己会说明，视觉上不必回收这个脉冲。 */
+  const [petPulse, setPetPulse] = useState<{ kind: PetPulseKind; id: number } | null>(null)
+  const pulseSeq = useRef(0)
+  const emitPulse = (kind: PetPulseKind) => setPetPulse({ kind, id: (pulseSeq.current += 1) })
+
+  /* ---- 干预光流：SSE 决策 → 猫头中心 → 目标日程卡片中心 → 卡片出现。
+   *
+   * 卡片不再"一到达就渲染"，而是等光点真的落在卡片上再放出来。
+   * 这样"系统把建议递给某条日程"才是看得见的因果，而不是一张凭空出现的弹窗。
+   * 全部时序在 useInterventionStream 里，这里只负责把结果挂回界面。 */
+  const [revealedDecision, setRevealedDecision] = useState<DecisionEnvelope | null>(null)
+  const [streamHit, setStreamHit] = useState<StreamHit | null>(null)
+  const hitTimer = useRef<number | null>(null)
+
+  const { flight, submit, arrive } = useInterventionStream({
+    mood: state?.pet.mood ?? 'normal',
+    stateSeq,
+    records,
+    // 起飞瞬间先收掉上一张卡片，避免旧建议与新光流同时占着右栏
+    onStart: () => setRevealedDecision(null),
+    onHit: (recordId, color) => {
+      if (hitTimer.current !== null) window.clearTimeout(hitTimer.current)
+      setStreamHit({ id: recordId, color: color.glow })
+      // 与 CSS 的 iv-hit 对齐：闪光结束即摘类，卡片上不残留命中态
+      hitTimer.current = window.setTimeout(() => setStreamHit(null), 950)
+    },
+    onReveal: setRevealedDecision,
+  })
+
+  // 只有 SSE 送达的新决策才触发动画；刷新回看的历史决策不进这条通道
+  useEffect(() => {
+    if (decisionEvent) submit(decisionEvent.decision)
+  }, [decisionEvent, submit])
+
+  // 刷新后仍能看见最近一张卡片（既有能力），但不重放光流 —— 它不是"刚发生"。
+  // 预览模式跳过：否则旧卡片会先出现，把"卡片在光点抵达后才出现"的时序演示搞乱。
+  const restored = useRef(false)
+  useEffect(() => {
+    if (STREAM_DEMO) return
+    if (!restored.current && decision && !decisionEvent) {
+      restored.current = true
+      setRevealedDecision(decision)
+    }
+  }, [decision, decisionEvent])
+
+  /* ---- 拍摄/演示用：地址栏加 `?stream=demo` --------------------------------
+   * 用一条**合成决策**预览光流，不调模型、不写库、不参与任何判定。
+   * 没有它就得先制造一次真冲突才能看到动画，调色和拍摄都不可控。
+   * 边界：只在带参时生效；id 固定为 demo-preview（StrictMode 下重复触发会被
+   * `submit` 按 id 去重）；target 只取列表里第一条真实记录。
+   */
+  const demoOnce = useRef(false)
+  useEffect(() => {
+    if (demoOnce.current || records.length === 0) return
+    if (!new URLSearchParams(window.location.search).has('stream')) return
+
+    const timer = window.setTimeout(() => {
+      demoOnce.current = true
+      // 预览也走一次真实的 state 刷新：光流要等"新情绪落定"，
+      // 没有这一步它就只能在超时后才起飞，看起来像卡了一下。
+      void reload()
+      const target = records[0]
+      const demo: DecisionEnvelope = {
+        source: 'llm',
+        attempts: 1,
+        issues: [],
+        intervention_id: 'demo-preview',
+        delivered: true,
+        trigger: 'demo',
+        payload: {
+          schema_version: '1.0',
+          decision_type: 'reschedule',
+          confidence: 0.86,
+          summary: '预览：把这条日程挪开 40 分钟',
+          reasoning_tags: ['demo'],
+          suggestions: [
+            {
+              id: 'demo-s1',
+              kind: 'move',
+              target_record_id: target.id,
+              proposed_start: target.start_at,
+              proposed_end: target.end_at,
+              rationale: '合成建议，仅用于预览光流',
+              risk: 'low',
+            },
+          ],
+          intervention: {
+            type: 'reschedule_proposal',
+            title: '预览：干预光流',
+            message: '这条卡片是在光点抵达日程之后才出现的 —— 时序就是产品要讲的那条因果链。',
+            pet_line: null,
+            tone: 'gentle',
+            expires_at: null,
+            actions: [],
+          },
+          caveats: ['合成数据，仅用于预览'],
+        },
+        rhythm: { used_today: 0, remaining_today: 3, blocked_by: '', next_allowed_at: null },
+      }
+      submit(demo)
+    }, 600)
+
+    return () => window.clearTimeout(timer)
+  }, [records, submit, reload])
+
+  useEffect(
+    () => () => {
+      if (hitTimer.current !== null) window.clearTimeout(hitTimer.current)
+    },
+    [],
+  )
+
   useEffect(() => {
     applyTheme(theme)
   }, [theme])
 
-  const onCreate = (input: RecordInput) => run(() => api.createRecord(input).then(() => undefined))
+  const onCreate = (input: RecordInput) => {
+    emitPulse('record_added')
+    return run(() => api.createRecord(input).then(() => undefined))
+  }
 
-  const onUpdate = (id: string, draft: RecordDraft) =>
-    run(async () => {
+  const onUpdate = (id: string, draft: RecordDraft) => {
+    // 完成走"心跳"反应；只动时间的编辑走"信号扰动"反应
+    emitPulse(draft.status === 'done' ? 'task_done' : 'record_moved')
+    return run(async () => {
       await api.updateRecord(id, draft)
       // 状态变为 done 时补一条行为事件 —— 这是 LLM 唯一的输入来源
       if (draft.status === 'done') {
         await api.reportEvents([{ kind: 'task_completed', record_id: id }])
       }
     })
+  }
 
-  const onComplete = (item: RecordItem) =>
-    run(async () => {
+  const onComplete = (item: RecordItem) => {
+    emitPulse('task_done')
+    return run(async () => {
       await api.updateRecord(item.id, { status: 'done' })
       await api.reportEvents([{ kind: 'task_completed', record_id: item.id }])
     })
+  }
 
   const onRemove = (id: string) => run(() => api.deleteRecord(id))
 
@@ -79,16 +210,23 @@ export default function App() {
         // 但"为什么没给建议"必须说出来 —— 沉默比拒绝更让人困惑。
         setHint(res.reason ?? '本次未送达')
         setDecision(null)
+        setRevealedDecision(null)
       } else {
         setHint(null)
         setDecision(res)
+        // 手动问的这条也走光流；若 SSE 已先一步广播同一条，submit 会按 id 去重
+        submit(res)
       }
     }).finally(() => setAsking(false))
   }
 
   /** 采用建议：直接改日程，走与手动编辑完全相同的链路 —— 不另起一条。 */
-  const onApplySuggestion = (recordId: string, start: string, end: string) =>
-    run(() => api.updateRecord(recordId, { start_at: start, end_at: end }).then(() => undefined))
+  const onApplySuggestion = (recordId: string, start: string, end: string) => {
+    emitPulse('record_moved')
+    return run(() =>
+      api.updateRecord(recordId, { start_at: start, end_at: end }).then(() => undefined),
+    )
+  }
 
   const conflicts = state?.signals.conflicts ?? []
   const conflictIds = new Set(conflicts.flatMap((c) => c.record_ids))
@@ -140,7 +278,7 @@ export default function App() {
             className="btn small"
             onClick={onAskDecision}
             disabled={asking}
-            title="手动问一次决策器。模型往返约需 9 秒，期间按钮会显示「问决策器中…」"
+            title="手动问一次决策器。模型往返约需 10 秒，期间按钮会显示「问决策器中…」"
           >
             {asking ? '问决策器中…' : '问决策器'}
           </button>
@@ -181,12 +319,16 @@ export default function App() {
             onUpdate={onUpdate}
             onComplete={onComplete}
             onRemove={onRemove}
+            hit={streamHit}
           />
-          <DayTimeline records={records} />
+          {/* 把冲突一并传下去：时间轴要画的不只是"排了什么"，
+              更是"哪里撞上了"。冲突本身只给 record_ids + 分钟数，
+              时间段由组件自己反算 —— 不新增请求。 */}
+          <DayTimeline records={records} conflicts={conflicts} />
         </main>
 
         <aside className="col-side">
-          <PetPanel state={state} thinking={asking} />
+          <PetPanel state={state} thinking={asking} pulse={petPulse} onPulse={emitPulse} />
 
           {hint && (
             <div className="banner-info" role="status">
@@ -217,10 +359,13 @@ export default function App() {
               会自动恢复成大尺寸并亮起思考环，转场就是"猫抬起头开始想"。 */}
           {!asking && (
             <InterventionCard
-              decision={decision}
+              decision={revealedDecision}
               records={records}
               onApply={onApplySuggestion}
-              onDismiss={() => setDecision(null)}
+              onDismiss={() => {
+                setRevealedDecision(null)
+                setDecision(null)
+              }}
               onFeedback={(kind) => {
                 // 反馈已经写进事件流与反馈画像，下一轮决策会读到。
                 // 这里只做一件事：让用户知道系统记下了。
@@ -252,6 +397,10 @@ export default function App() {
         <span className="foot-grow" />
         <span className="foot-item dim">SecondWill v1.0</span>
       </footer>
+
+      {/* 光流覆盖层：flight 为 null 时组件直接返回 null，DOM 上什么都不留。
+          它挂在最外层，坐标才能用视口绝对定位，不被任何栏的溢出裁掉。 */}
+      <InterventionStream flight={flight} onArrive={arrive} />
     </div>
   )
 }
