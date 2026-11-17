@@ -30,3 +30,6 @@ dist/
 # session artifacts / build products
 .workbuddy/
 *.egg-info/
+
+# 本地临时产物（走查截图、日志、录制中间文件）
+.tmp/
