@@ -18,8 +18,9 @@ import pytest  # noqa: E402
 
 from app.core.constants import (  # noqa: E402
     PET_GREAT_COMPLETION_MIN,
+    PET_GREAT_DONE_MIN,
     PET_GREAT_STREAK_MIN,
-    PET_GUILTY_INDEX_MIN,
+    PET_GUILTY_OVERDUE_MIN,
     PET_MOOD_PRIORITY,
     PET_TIRED_OVERDUE_DAYS,
 )
@@ -122,9 +123,8 @@ class TestMoodPriority:
 
     def test_tired_wins_over_guilty(self):
         s = signals(
-            overdue_count=4,
+            overdue_count=max(4, PET_GUILTY_OVERDUE_MIN),
             avg_overdue_days=float(PET_TIRED_OVERDUE_DAYS),
-            procrastination_index=PET_GUILTY_INDEX_MIN,
             completion_rate_7d=0.0,
         )
         # 有近期完成，排除 dormant
@@ -140,6 +140,57 @@ class TestMoodPriority:
             streak_days=PET_GREAT_STREAK_MIN,
         )
         assert compute([], [], s, NOW).mood is PetMood.GREAT
+
+    def test_great_by_done_count_without_streak(self):
+        """新用户的通道：历史是空的（streak=1），但今天实实在在做完 3 件。
+
+        没有这条，刚导入数据的人无论今天做得多好都只会看到 `normal` ——
+        真实反馈是"怎么我把任务全部完成也是平静"。
+        """
+        s = signals(completion_rate_today=1.0, streak_days=1)
+        recs = [
+            FakeRecord(created_at=L(D0, time(9)), end_at=L(D0, time(9 + i)), status="done")
+            for i in range(PET_GREAT_DONE_MIN)
+        ]
+        assert compute(recs, [], s, NOW).mood is PetMood.GREAT
+
+    def test_two_done_is_not_enough(self):
+        """只做完 2 件不够 —— 门槛太低会让这一档失去含义。"""
+        s = signals(completion_rate_today=1.0, streak_days=1)
+        recs = [
+            FakeRecord(created_at=L(D0, time(9)), end_at=L(D0, time(9 + i)), status="done")
+            for i in range(PET_GREAT_DONE_MIN - 1)
+        ]
+        assert compute(recs, [], s, NOW).mood is PetMood.NORMAL
+
+    def test_yesterday_done_does_not_count_as_today(self):
+        """昨天做完的三件不能算进今天 —— 通道只认"今天"。"""
+        s = signals(completion_rate_today=1.0, streak_days=1)
+        yday = local_to_utc(datetime.combine(date(2026, 10, 27), time(10, 0)))
+        recs = [
+            FakeRecord(created_at=yday, end_at=yday, status="done")
+            for _ in range(PET_GREAT_DONE_MIN)
+        ]
+        assert compute(recs, [], s, NOW).mood is PetMood.NORMAL
+
+    def test_guilty_is_reachable_with_shallow_overdue(self):
+        """回归：guilty 曾经是死档，永不可能命中。
+
+        逾期条数成规模（≥3）、但单条都没拖到 2 天时，tired 不该抢走这一档 ——
+        用户应当看到"欠得多"的愧疚脸，而不是一切正常。
+
+        注意这里的 procrastination_index 刻意取 0.21：那是真实数据下这种局面的
+        上限量级（3 条逾期 / 平均 1.75 天 / 7 日完成率 0% 实测只有 0.25），
+        远低于旧的 0.6 门槛。旧实现下这条断言会失败，正是它作为回归测试的意义。
+        """
+        s = signals(
+            overdue_count=PET_GUILTY_OVERDUE_MIN,
+            avg_overdue_days=1.5,
+            completion_rate_7d=0.0,
+            procrastination_index=0.21,
+        )
+        events = [FakeEvent("task_completed", L(D0, time(9, 0)))]
+        assert compute([], events, s, NOW).mood is PetMood.GUILTY
 
 
 class TestAlertVsTiredSeparation:
@@ -257,10 +308,10 @@ class TestThresholdsComeFromConstants:
     def test_guilty_threshold_is_wired(self, monkeypatch):
         import app.services.pet as pet_mod
 
-        s = signals(procrastination_index=0.59, completion_rate_7d=0.2)
+        s = signals(overdue_count=PET_GUILTY_OVERDUE_MIN - 1, completion_rate_7d=0.2)
         assert compute([], [], s, NOW).mood is not PetMood.GUILTY
 
-        monkeypatch.setattr(pet_mod, "PET_GUILTY_INDEX_MIN", 0.5)
+        monkeypatch.setattr(pet_mod, "PET_GUILTY_OVERDUE_MIN", PET_GUILTY_OVERDUE_MIN - 1)
         assert compute([], [], s, NOW).mood is PetMood.GUILTY
 
     def test_great_thresholds_are_wired(self, monkeypatch):

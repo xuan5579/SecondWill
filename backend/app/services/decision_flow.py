@@ -28,6 +28,7 @@ from app.core.logging import get_logger
 from app.db.base import utcnow
 from app.llm.orchestrator import DecisionResult, build_request, decide, should_trigger
 from app.models.intervention import Intervention
+from app.models.record import Record
 from app.services.events import publish_decision
 from app.services.rhythm import (
     InterventionTrace,
@@ -158,6 +159,21 @@ async def run_decision(
             "pet_mood": pet.mood.value,
         }
 
+    # ---- 新鲜度复核 ----
+    # 模型跑这几秒里，用户可能已经把问题自己解决了（见 _stale_reason）。
+    # 过时的建议比没有建议更糟：它会让人怀疑整套判断。
+    stale = _stale_reason(db, result, trigger)
+    if stale:
+        logger.info("决策结果已过时，不送达: %s", stale)
+        return {
+            "triggered": True,
+            "delivered": False,
+            "reason": stale,
+            "blocked_by": "stale",
+            "rhythm": _rhythm_dict(verdict),
+            "pet_mood": pet.mood.value,
+        }
+
     intervention_id: str | None = None
     if persist:
         try:
@@ -207,6 +223,52 @@ async def run_decision(
     }
 
 
+def _stale_reason(db: Session, result: DecisionResult, trigger: str) -> str | None:
+    """模型跑完这几秒里，用户可能已经把问题自己解决了。
+
+    ## 为什么需要这道复核（2026-11-17 实测）
+
+    一次决策要 6～9 秒。在那 9 秒里用户不会停手：实测连着勾掉五条记录，
+    第一步触发的决策在第 9.2 秒才落库，这时五条已经全部完成 ——
+    卡片却还在说「把整理实验数据挪到明早 08:00」，而那条刚被用户自己勾掉。
+    过时的建议比没有建议更糟：它让人怀疑整套判断是不是在看旧数据。
+
+    ## 两条判据
+
+    1. **触发条件是否还在**：撞车被勾掉、逾期降到阈值以下 —— 那就没有理由
+       再推"要不要重排"。对手动触发豁免：用户就是想问一次，问完状态没变也照给。
+    2. **建议指向的记录是否还活着**：已完成 / 已删除的不能再"挪走"。
+       这条对手动触发同样生效。
+
+    复核本身失败时**放行**（返回 None）：宁可送一条可能过时的建议，
+    也不要因为一次查询异常把正常建议吞掉。
+    """
+    try:
+        signals, _ = compute_state(db, now=utcnow())
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("新鲜度复核失败（放行）: %s", exc)
+        return None
+
+    if trigger not in RHYTHM_BYPASS_TRIGGERS:
+        ok, why = should_trigger(signals, trigger)
+        if not ok:
+            return f"状态在决策期间已变（{why}）"
+
+    ids = {s.target_record_id for s in result.payload.suggestions if s.target_record_id}
+    if ids:
+        try:
+            rows = db.query(Record).filter(Record.id.in_(ids)).all()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("复核建议指向的记录失败（放行）: %s", exc)
+            return None
+        alive = {r.id for r in rows if r.status not in ("done", "dropped")}
+        gone = ids - alive
+        if gone:
+            return f"建议指向的 {len(gone)} 条记录已完成或已被删除"
+
+    return None
+
+
 def _rhythm_dict(verdict) -> dict:
     """闸门结论的可序列化形式。前端用它显示"今日还剩几次"。"""
     return {
@@ -232,18 +294,57 @@ def _profile_dict(traces) -> dict:
     }
 
 
+# 后台决策的单飞闸门（见 run_decision_bg 的注释）。
+# 用普通布尔量而不是 asyncio.Lock：判断与置位之间没有 await，单事件循环下等价于原子；
+# 而模块级 Lock 会把创建时的事件循环绑死，测试里每个用例一个新循环，一用就报
+# "attached to a different loop"。
+_bg_running = False
+_bg_pending: str | None = None
+
+
 async def run_decision_bg(trigger: str = "schedule_change") -> None:
-    """后台任务入口：自建会话，绝不复用请求会话。
+    """后台任务入口：自建会话，绝不复用请求会话。**同一时刻只跑一个决策。**
 
-    请求会话在响应返回后就会被关闭，后台任务里用它必然踩到
-    "Session is closed" —— 这个坑在这里被显式绕开。
+    ## 为什么要单飞（2026-11-17 实测）
+
+    一次「勾完成」会同时踩两条写路径 —— `PATCH /records` 与随后的 `POST /events`，
+    两条都各自 `add_task(run_decision_bg)`。连点五条记录，瞬间就有 8～10 个决策
+    同时起跑，每个都占着自己的会话等模型（10 秒量级）。SQLite 的 QueuePool
+    默认 5+10，一眨眼就被占满，之后 30 秒内**所有**请求（连 /api/state 都算）
+    一起超时；连接恢复后这批积压的决策又在同一毫秒落库 —— 实测一次连点
+    就在干预表里砸出 7 条（6 条 reschedule + 1 条 no_action），全是过时状态，
+    当天的 3 次自动额度被一次性烧光，界面上还留着一堆指向已完成记录的僵尸卡。
+
+    ## 规则
+
+    跑着的时候来的请求只记下「还有事要跑」，跑完用**最新**状态补跑一次。
+    信号不会丢，并发不会雪崩。
     """
-    from app.db.session import SessionLocal
+    global _bg_running, _bg_pending
 
-    db = SessionLocal()
+    # 手动触发优先级最高，不能被自动触发的待跑位盖掉
+    if trigger in RHYTHM_BYPASS_TRIGGERS or _bg_pending is None:
+        _bg_pending = trigger
+
+    if _bg_running:
+        logger.info("决策已在跑，本次触发合并进补跑（%s）", trigger)
+        return
+
+    _bg_running = True
     try:
-        await run_decision(db, trigger=trigger)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("后台决策失败（已忽略）: %s", exc)
+        while _bg_pending is not None:
+            current = _bg_pending
+            _bg_pending = None
+
+            from app.db.session import SessionLocal
+
+            db = SessionLocal()
+            try:
+                await run_decision(db, trigger=current)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("后台决策失败（已忽略）: %s", exc)
+            finally:
+                db.close()
     finally:
-        db.close()
+        _bg_running = False
+

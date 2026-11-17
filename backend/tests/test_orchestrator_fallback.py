@@ -57,10 +57,11 @@ B = rec("rec_b", "写周报", (14, 30), (15, 30), priority=3)
 # ==================================================================
 
 
-def _signals(hard: int = 0, index: float = 0.0):
+def _signals(hard: int = 0, index: float = 0.0, overdue: int = 0):
     class S:
         conflicts = [type("C", (), {"hard": True})() for _ in range(hard)]
         procrastination_index = index
+        overdue_count = overdue
 
     return S()
 
@@ -77,6 +78,28 @@ def test_trigger_on_hard_conflict():
 def test_trigger_on_high_index():
     ok, _ = should_trigger(_signals(index=0.6), "schedule_change")
     assert ok
+
+
+def test_trigger_on_overdue_count():
+    """欠着 2 件小事也该触发 —— 这是拖延最常见的形态，却够不到指数阈值。
+
+    旧实现只有 `index ≥ 0.5`：两件各欠 1.5 天，指数只有约 0.2，
+    猫对"手里欠着两件事"完全没反应。
+    """
+    ok, reason = should_trigger(_signals(overdue=2, index=0.2), "schedule_change")
+    assert ok and "逾期 2 条" in reason
+
+
+def test_no_trigger_on_single_overdue():
+    """只欠 1 件、指数也不高时仍然不打扰 —— 阈值不能松到见逾期就叫人。"""
+    ok, _ = should_trigger(_signals(overdue=1, index=0.2), "schedule_change")
+    assert ok is False
+
+
+def test_trigger_on_high_index_without_overdue():
+    """兜底通道保留：指数极高但逾期条数不到阈值时仍然触发。"""
+    ok, reason = should_trigger(_signals(overdue=1, index=0.9), "schedule_change")
+    assert ok and "拖延指数" in reason
 
 
 def test_no_trigger_when_calm():

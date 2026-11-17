@@ -187,16 +187,27 @@ def streak_days(days: Iterable[date], today: date) -> int:
 def today_completion_rate(records: Sequence, now: datetime) -> float:
     """当日完成率。用于宠物 `great` 档判定。
 
-    与 7 日完成率的默认值不同：**今天一条计划都没有时返回 0.0**。
+    分母 = 今天**已到期**的任务 + **已完成**的任务。两条规则各有理由：
+
+    1. 已到期（`end_at <= now`）才算分母，未到期的**未完成**任务不计。
+       否则上午十点就按「你还有五件事没做完」定分 —— 一个人从早忙到晚、
+       每件都按时完成，白天也只有 0.2，`great` 只在深夜才出现，等于没有这一档。
+    2. 但**已完成**的提前任务必须计回分母。它们是实打实的成果，
+       漏掉会出现更荒诞的结果：凌晨把今天排的活全干完 → 分母为 0 → 完成率 0
+       → 越努力越没反应。漏这一条等于把"提前完成"当成不存在。
+
+    与 7 日完成率的默认值不同：**分母为空时返回 0.0**。
     7 日率要防御误伤新用户（所以给中性值），而当日的 `great` 档必须有实打实的证据
-    ——没排任何计划却让猫说"你今天真棒"，是虚假正反馈。
+    —— 没排任何计划却让猫说"你今天真棒"，是虚假正反馈。
     """
     local_now = utc_to_local(now)
+    today = local_now.date()
     sample = [
         r for r in records
         if getattr(r, "end_at", None) is not None
-        and containing_local_day(r.end_at) == local_now.date()
+        and containing_local_day(r.end_at) == today
         and getattr(r, "status", None) != "dropped"
+        and (r.end_at <= now or getattr(r, "status", None) == "done")
     ]
     if not sample:
         return 0.0

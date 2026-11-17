@@ -135,6 +135,53 @@ class TestCompletionRates:
         ]
         assert today_completion_rate(recs, NOW) == pytest.approx(0.5)
 
+    def test_future_tasks_do_not_count_against_today(self):
+        """还没轮到的任务不进分母 —— 否则上午排 6 条、做完 1 条永远只有 0.17，
+        `great` 只可能在深夜出现，等于没有这一档。"""
+        recs = [
+            R("done", L(D0, 9), L(D0, 10), status="done"),
+            *[
+                R(f"later{i}", L(D0, 14 + i), L(D0, 15 + i), status="pending")
+                for i in range(5)
+            ],
+        ]
+        assert today_completion_rate(recs, NOW) == 1.0
+
+    def test_all_plans_in_future_is_zero(self):
+        """今天一件都还没到期时不给正反馈 —— 那不是"做得好"，是"还没开始"。"""
+        recs = [R("later", L(D0, 15), L(D0, 16), status="pending")]
+        assert today_completion_rate(recs, NOW) == 0.0
+
+    def test_done_ahead_of_schedule_counts(self):
+        """提前做完的任务必须计回分母。
+
+        漏掉这一条会得出更荒诞的结论：凌晨把今天排的五件事全干完，
+        分母为 0、完成率 0，猫一脸平静 —— 越努力越没反应。
+        （真实反馈："怎么我把任务全部完成也是平静"）
+        """
+        recs = [
+            R(f"early{i}", L(D0, 15 + i), L(D0, 16 + i), status="done")
+            for i in range(5)
+        ]
+        assert today_completion_rate(recs, NOW) == 1.0
+
+    def test_done_ahead_does_not_pull_future_pending_in(self):
+        """提前做完一件，剩下的还在未来 —— 那些仍然不进分母，不因"有人做完了"就连坐。"""
+        recs = [
+            R("early", L(D0, 15), L(D0, 16), status="done"),
+            R("later", L(D0, 16), L(D0, 17), status="pending"),
+        ]
+        assert today_completion_rate(recs, NOW) == 1.0
+
+    def test_overdue_pending_still_drags_rate_down(self):
+        """已到期但没做完的，必须照常拉低分母 —— 放松的是未来，不是过去。"""
+        recs = [
+            R("done", L(D0, 9), L(D0, 10), status="done"),
+            R("missed", L(D0, 11), L(D0, 12), status="pending"),
+            R("later", L(D0, 15), L(D0, 16), status="pending"),
+        ]
+        assert today_completion_rate(recs, NOW) == pytest.approx(0.5)
+
     def test_completion_dates_union_of_events_and_records(self):
         """事件缺失（未加 --emit-events 的导入数据）时，
         status=done 的记录本身也必须算作完成痕迹，否则历史被抹掉。"""

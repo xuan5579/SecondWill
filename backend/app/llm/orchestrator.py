@@ -3,8 +3,9 @@
 这个文件的职责可以概括成一句话：**让"调模型"这件事变得可失败。**
 
 触发判定（文档 B3）：
-    产生 hard 冲突 / 拖延指数 ≥ LLM_TRIGGER_INDEX / 手动触发 —— 才会真的去调模型。
-    改日程但没冲突**不调用**：那是最常见的操作，每次都问模型既烧钱又慢，
+    产生 hard 冲突 / 逾期条数 ≥ LLM_TRIGGER_OVERDUE_MIN / 拖延指数 ≥ LLM_TRIGGER_INDEX
+    / 手动触发 —— 才会真的去调模型。
+    改日程但没冲突、也没欠账**不调用**：那是最常见的操作，每次都问模型既烧钱又慢，
     而且"你改了个日程，模型说：好的"这种交互没有任何价值。
 
 失败阶梯：
@@ -33,6 +34,7 @@ from app.core.constants import (
     LLM_PROMPT_MAX_RECORDS,
     LLM_TOKEN_LADDER,
     LLM_TRIGGER_INDEX,
+    LLM_TRIGGER_OVERDUE_MIN,
     WORKING_HOURS_END,
     WORKING_HOURS_START,
 )
@@ -124,9 +126,15 @@ def should_trigger(
     signals,
     trigger: str,
     *,
+    overdue_threshold: int = LLM_TRIGGER_OVERDUE_MIN,
     index_threshold: float = LLM_TRIGGER_INDEX,
 ) -> tuple[bool, str]:
     """是否值得打扰模型（文档 B3）。
+
+    三条通道，任一成立即触发：
+    1. 硬冲突 —— 两件事同时占一个时间段，用户自己排不出来，必须给方案；
+    2. 逾期条数 ≥ 阈值 —— "手里欠着几件事"，这是拖延最直观的形态；
+    3. 拖延指数 ≥ 阈值 —— 兜底：单条但拖了极久（数月）的情况。
 
     返回 (是否触发, 原因)。原因会写进日志 —— 排查"为什么没出建议"时，
     第一件事就是看这里。
@@ -136,10 +144,13 @@ def should_trigger(
     hard = [c for c in getattr(signals, "conflicts", ()) if c.hard]
     if hard:
         return True, f"存在 {len(hard)} 处硬冲突"
+    overdue = getattr(signals, "overdue_count", 0) or 0
+    if overdue >= overdue_threshold:
+        return True, f"逾期 {overdue} 条 ≥ {overdue_threshold}"
     index = getattr(signals, "procrastination_index", 0.0)
     if index >= index_threshold:
         return True, f"拖延指数 {index:.2f} ≥ {index_threshold}"
-    return False, "无硬冲突且拖延指数未达阈值"
+    return False, "无硬冲突，逾期条数与拖延指数均未达阈值"
 
 
 # ==================================================================

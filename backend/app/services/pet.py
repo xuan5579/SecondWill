@@ -39,9 +39,10 @@ from app.core.constants import (
     ENERGY_PROCRASTINATION_WEIGHT,
     PET_DORMANT_IDLE_DAYS,
     PET_GREAT_COMPLETION_MIN,
+    PET_GREAT_DONE_MIN,
     PET_GREAT_STREAK_MIN,
     PET_GUILTY_COMPLETION_MAX,
-    PET_GUILTY_INDEX_MIN,
+    PET_GUILTY_OVERDUE_MIN,
     PET_MOOD_PRIORITY,
     PET_TIRED_OVERDUE_DAYS,
 )
@@ -55,7 +56,7 @@ class PetMood(str, Enum):
     ALERT = "alert"        # 前瞻预警：未来 24h 存在 hard 冲突
     DORMANT = "dormant"    # 休眠：连续多日无任何完成
     TIRED = "tired"        # 已在拖延：连续多日存在逾期未处理
-    GUILTY = "guilty"      # 拖欠累积：拖延指数高且完成率低
+    GUILTY = "guilty"      # 拖欠累积：逾期条数成规模，且完成率低
     GREAT = "great"        # 状态很好：当日完成率高且连续达标
     NORMAL = "normal"      # 兜底
 
@@ -120,24 +121,55 @@ def _tired(records, events, signals: Signals, now: datetime) -> bool:
 
 
 def _guilty(records, events, signals: Signals, now: datetime) -> bool:
-    """拖欠累积：拖延指数高，且近 7 日完成率明显偏低（回顾）。"""
+    """拖欠累积：逾期**数量**成规模，且近 7 日完成率明显偏低（回顾）。
+
+    为什么看条数而不是拖延指数：指数在 tired 的短路下有一个数学上限
+    （≈ 平均逾期天数 ÷ 7），永远到不了 0.6，这一档曾经是死档。
+    详见 `PET_GUILTY_OVERDUE_MIN` 的注释。
+
+    语义分工：`tired` 管「拖得久」（平均逾期 ≥2 天），`guilty` 管「欠得多」
+    （一批都没处理，但单条还没拖到 2 天）。所以 guilty 只在 tired 之后才可能被读到。
+    """
     return (
-        signals.procrastination_index >= PET_GUILTY_INDEX_MIN
+        signals.overdue_count >= PET_GUILTY_OVERDUE_MIN
         and signals.completion_rate_7d < PET_GUILTY_COMPLETION_MAX
     )
 
 
-def _great(records, events, signals: Signals, now: datetime) -> bool:
-    """状态很好：当日完成率高且连续达标（回顾）。
+def _done_today_count(records: Sequence, now: datetime) -> int:
+    """今天真正完成的条数。口径与 `signal.today_completion_rate` 的分子一致。
 
-    要求 `completion_rate_today > 0`：今天一条计划都没排时不该被夸。
+    直接从记录算而不进 `Signals`：它是这一档的判据细节，不是供 LLM 或前端消费的信号，
+    加进契约会让所有下游都要跟着改。
+    """
+    today = utc_to_local(now).date()
+    return sum(
+        1
+        for r in records
+        if getattr(r, "end_at", None) is not None
+        and containing_local_day(r.end_at) == today
+        and getattr(r, "status", None) == "done"
+    )
+
+
+def _great(records, events, signals: Signals, now: datetime) -> bool:
+    """状态很好：当日完成率高，且有"持续"或"量足"其中之一作证（回顾）。
+
+    两个通道：
+    - 连续 ≥3 天有完成 —— 老用户的节奏证据；
+    - 今日完成 ≥3 件 —— 新用户的单日证据。
+
+    第二条是为"历史是空的、但今天确实干了很多"的情形准备的：没有它，
+    刚导入数据的人无论今天做得多好都只会看到 `normal`。
+    同时要求 `completion_rate_today > 0`：今天一条计划都没排时不该被夸，
     虚假的正反馈比没有反馈更伤信任。
     """
-    return (
-        signals.completion_rate_today >= PET_GREAT_COMPLETION_MIN
-        and signals.completion_rate_today > 0
-        and signals.streak_days >= PET_GREAT_STREAK_MIN
-    )
+    rate = signals.completion_rate_today
+    if rate <= 0 or rate < PET_GREAT_COMPLETION_MIN:
+        return False
+    if signals.streak_days >= PET_GREAT_STREAK_MIN:
+        return True
+    return _done_today_count(records, now) >= PET_GREAT_DONE_MIN
 
 
 #: 判定规则表。key 的顺序无意义，遍历顺序由 `PET_MOOD_PRIORITY` 决定——
@@ -148,11 +180,12 @@ RULES: dict[PetMood, tuple] = {
     PetMood.TIRED: (_tired, f"平均逾期 ≥{PET_TIRED_OVERDUE_DAYS} 天"),
     PetMood.GUILTY: (
         _guilty,
-        f"拖延指数 ≥{PET_GUILTY_INDEX_MIN} 且 7 日完成率 <{PET_GUILTY_COMPLETION_MAX}",
+        f"逾期 ≥{PET_GUILTY_OVERDUE_MIN} 条且 7 日完成率 <{PET_GUILTY_COMPLETION_MAX}",
     ),
     PetMood.GREAT: (
         _great,
-        f"当日完成率 ≥{PET_GREAT_COMPLETION_MIN} 且连续 ≥{PET_GREAT_STREAK_MIN} 天",
+        f"当日完成率 ≥{PET_GREAT_COMPLETION_MIN}，且连续 ≥{PET_GREAT_STREAK_MIN} 天"
+        f"或今日完成 ≥{PET_GREAT_DONE_MIN} 件",
     ),
 }
 
